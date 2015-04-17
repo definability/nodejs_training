@@ -1,7 +1,7 @@
 function strToBoolean() {
-    var testString = "";
-    var STR_TRUE = "true";
-    var STR_FALSE = "false";
+    var testString = "",
+        STR_TRUE = "true",
+        STR_FALSE = "false";
 
     // Ternary operator
     var strBool = testString === STR_TRUE;
