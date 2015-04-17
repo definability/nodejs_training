@@ -18,8 +18,8 @@ function codeColumns() {
     var stringToCheck = "Good";
     var GOOD_STRING = "Good";
     var BAD_STRING = "Bad";
-    var isStringCorrect = (stringToCheck === GOOD_STRING ?
-                           1 : stringToCheck === BAD_STRING ?
+    var isStringCorrect = (stringToCheck === GOOD_STRING?
+                           1 : stringToCheck === BAD_STRING?
                            1 : -1);
 
     // bad
@@ -27,7 +27,7 @@ function codeColumns() {
     var stringToCheck = "Good";
     var GOOD_STRING = "Bad";
     var BAD_STRING = "Bad";
-    var isStringCorrect = ((stringToCheck == GOOD_STRING || stringToCheck == BAD_STRING) ? 1 : -1);
+    var isStringCorrect = ((stringToCheck == GOOD_STRING || stringToCheck == BAD_STRING)? 1 : -1);
 }
 
 function increment() {
@@ -49,7 +49,7 @@ function floatComparison() {
 
     var f1 = 1.0;
     var f2 = Math.sqrt(1.0);
-    var TOLERANCE = Number.EPSILON === undefined ? 1E-6 : Number.EPSILON;
+    var TOLERANCE = Number.EPSILON === undefined? 1E-6 : Number.EPSILON;
 
     var areEqual = Math.abs(f1 - f2) < TOLERANCE;
 
