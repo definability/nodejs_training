@@ -2,6 +2,8 @@ function intToStr() {
     // good
     var strNumber = new String(1) + new String(2);
     var result = "Result is " + strNumber;
+    // or
+    var result = "Result is ".concat(1, 2);
     // bad
     var result = "Result is " + 1 + 2;
 }
