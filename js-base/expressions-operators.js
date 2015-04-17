@@ -1,4 +1,4 @@
-function variablesComparison () {
+function variablesComparison() {
     // good
 
     var stringToCheck = "Good";
@@ -12,7 +12,7 @@ function variablesComparison () {
     var isGood = stringToCheck == GOOD_STRING
 }
 
-function codeColumns () {
+function codeColumns() {
     // good
 
     var stringToCheck = "Good";
@@ -30,7 +30,7 @@ function codeColumns () {
     var isStringCorrect = ((stringToCheck == GOOD_STRING || stringToCheck == BAD_STRING) ? 1 : -1);
 }
 
-function increment () {
+function increment() {
     // good
 
     var i = 1;
@@ -44,7 +44,7 @@ function increment () {
     i += i+++++i;
 }
 
-function floatComparison () {
+function floatComparison() {
     // good
 
     var f1 = 1.0;

@@ -1,4 +1,4 @@
-function naming () {
+function naming() {
     //good
 
     var unity = 1;
@@ -9,7 +9,7 @@ function naming () {
     var Unity = 1;
 }
 
-function keysNames () {
+function keysNames() {
     // good
 
     var objectVar = {"num": 1, "str": "1", "bool": true};
