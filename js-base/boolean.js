@@ -3,6 +3,10 @@ function strToBoolean() {
         STR_TRUE = "true",
         STR_FALSE = "false";
 
+    // Negation operator
+    var strTrue = !!"string";
+    var strFalse = !!"";
+
     // Ternary operator
     var strBool = testString === STR_TRUE;
 
@@ -43,6 +47,8 @@ function strToBoolean() {
 function intToBoolean() {
     var testNumber = 0;
 
+    // 0, 0.0, NaN give false
+    // other numbers (including Infinity) give true
     var opBool = testNumber? true : false;
 
     var condBool;
@@ -52,4 +58,7 @@ function intToBoolean() {
     else {
         condBool = false;
     }
+
+    var numFalse = !!0;
+    var numTrue = !!7;
 }

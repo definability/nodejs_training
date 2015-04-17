@@ -1,7 +1,7 @@
 function naming() {
     //good
 
-    var unity = 1;
+    var UNITY = 1;
 
     // bad
 
@@ -10,6 +10,7 @@ function naming() {
 }
 
 function keysNames() {
+
     // good
 
     var objectVar = {"num": 1, "str": "1", "bool": true};
