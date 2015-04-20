@@ -12,8 +12,8 @@ describe('Users', function() {
         });
     });
     describe('#setPassword(pass)', function() {
-        it('should return undefined', function() {
-            assert.equal(u.setPassword('pass'), undefined);
+        it('should work without errors', function() {
+            assert.doesNotThrow(function() { u.setPassword('pass'); });
         });
     });
     describe('#checkPassword(pass)', function() {
@@ -35,6 +35,16 @@ describe('Users', function() {
             assert.equal(John.checkPassword('Pass'), true);
             assert.equal(Jane.checkPassword('Pass'), true);
             assert.notEqual(John.getPasswordHash(), Jane.getPasswordHash());
+        });
+        it('should return different values for similar passwords for one user', function() {
+            u.setPassword('pass');
+            var pass = u.getPasswordHash();
+            assert.equal(u.checkPassword('pass'), true);
+            u.setPassword('new pass');
+            assert.equal(u.checkPassword('new pass'), true);
+            assert.equal(u.checkPassword('pass'), false);
+            var newPass = u.getPasswordHash();
+            assert.notEqual(pass, newPass);
         });
     });
 });
