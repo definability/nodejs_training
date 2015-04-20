@@ -5,10 +5,10 @@ var Cache = (function() {
     var proto = constructor.prototype;
     
     proto.__validate = function (validator, values) {
-        var disjunction = function (a, b) {
+        var and = function (a, b) {
             return a & b;
         };
-        return values.map(validator, this).reduce(disjunction);
+        return values.map(validator, this).reduce(and);
     };
     proto.__check_unique_key = function (key) {
         return !this.value.hasOwnProperty(key);
