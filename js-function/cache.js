@@ -4,64 +4,51 @@ var Cache = (function() {
     };
     var proto = constructor.prototype;
     
-    proto.__check_unique_key = function (key) {
+    proto.__check_unique_key = function (key, onError) {
+        if (this.value.hasOwnProperty(key)) {
+            return onError('must be unique');
+        }
         return !this.value.hasOwnProperty(key);
     };
-    proto.__check_mandatory = function (value) {
+    proto.__check_mandatory = function (value, onError) {
+        if (value === undefined) {
+            return onError('is mandatory');
+        }
         return value !== undefined;
     };
 
     proto.add = function (key, value) {
-        var success = true;
-        if (!this.__check_mandatory(key)) {
-            success = false;
-            throw new Error('Field `key\' is required');
-        }
-        if (!this.__check_mandatory(value)) {
-            success = false;
-            throw new Error('Field `value\' is required');
-        }
-        if (!this.__check_unique_key(key)) {
-            success = false;
-            throw new Error('Field `key\' must be unique');
-        }
-        if (success) {
-            this.value[key] = value;
-        }
+        this.__check_mandatory(key, function(message) {
+            throw new Error('key ' + message);
+        });
+        this.__check_mandatory(value, function(message) {
+            throw new Error('value ' + message);
+        });
+        this.__check_unique_key(key, function(message) {
+            throw new Error('key ' + message);
+        });
+        this.value[key] = value;
     };
     proto.update = function (key, value) {
-        var success = true;
-        if (!this.__check_mandatory(key)) {
-            success = false;
-            throw new Error('Field `key\' is required');
-        }
-        if (!this.__check_mandatory(value)) {
-            success = false;
-            throw new Error('Field `value\' is required');
-        }
-        if (success) {
-            this.value[key] = value;
-        }
+        this.__check_mandatory(key, function(message) {
+            throw new Error('key ' + message);
+        });
+        this.__check_mandatory(value, function(message) {
+            throw new Error('value ' + message);
+        });
+        this.value[key] = value;
     };
     proto.get = function (key) {
-        var success = true;
-        if (!this.__check_mandatory(key)) {
-            success = false;
-            throw new Error('Field `key\' is required');
-        }
-        if (success) {
-            return this.value[key];
-        }
+        this.__check_mandatory(key, function(message) {
+            throw new Error('key ' + message);
+        });
+        return this.value[key];
     };
     proto.delete = function (key) {
-        var success = true;
-        if (!this.__check_mandatory(key)) {
-            success = false;
-            throw new Error('Field `key\' is required');
-        }
-        if (success) {
-            delete this.value[key];
-        }
+        this.__check_mandatory(key, function(message) {
+            throw new Error('key ' + message);
+        });
+        delete this.value[key];
     };
     proto.find = function (query) {
         var isSubstring = function (substring) {
