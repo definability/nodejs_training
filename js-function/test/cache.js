@@ -6,7 +6,7 @@ describe('Cache', function() {
     beforeEach(function() {
         c = new Cache();
     });
-    describe('#add(key, value)', function(){
+    describe('#add(key, value)', function() {
         it('should return undefined on success add', function() {
             assert.equal(c.add('key', 'value'), undefined);
         });
