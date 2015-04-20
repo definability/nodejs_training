@@ -7,8 +7,10 @@ describe('Stack', function() {
         s = new Stack();
     });
     describe('#push(value)', function() {
-        it('should return undefined on push', function() {
+        it('should return undefined on pushing null', function() {
             assert.equal(s.push(null), undefined);
+        });
+        it('should return undefined on pushing 0', function() {
             assert.equal(s.push(0), undefined);
         });
     });

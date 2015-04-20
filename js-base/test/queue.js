@@ -7,8 +7,10 @@ describe('Queue', function(){
         q = new Queue();
     });
     describe('#push(value)', function(){
-        it('should return undefined on push', function() {
+        it('should return undefined on pushing null', function() {
             assert.equal(q.push(null), undefined);
+        });
+        it('should return undefined on pushing 0', function() {
             assert.equal(q.push(0), undefined);
         });
     });
