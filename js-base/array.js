@@ -92,4 +92,7 @@ function collections() {
         }
         return constructor;
     })();
+    return {Stack: Stack, Queue: Queue};
 }
+
+module.exports = collections();
