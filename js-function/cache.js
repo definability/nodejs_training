@@ -4,11 +4,11 @@ var Cache = (function() {
     };
     var proto = constructor.prototype;
     
-    proto.__validate = function (validation, values) {
+    proto.__validate = function (validator, values) {
         var disjunction = function (a, b) {
             return a & b;
         };
-        return key.map(validation, this).reduce(disjunction);
+        return values.map(validator, this).reduce(disjunction);
     };
     proto.__check_unique_key = function (key) {
         return !this.value.hasOwnProperty(key);
@@ -17,10 +17,7 @@ var Cache = (function() {
         if (!Array.isArray(value)) {
             return value !== undefined;
         } else {
-            var disjunction = function (a, b) {
-                return a & b;
-            };
-            return value.map(this.__check_mandatory, this).reduce(disjunction);
+            return this.__validate(this.__check_mandatory, value);
         }
     };
 
