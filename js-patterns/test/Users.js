@@ -36,7 +36,7 @@ describe('Users', function() {
             assert.equal(Jane.checkPassword('Pass'), true);
             assert.notEqual(John.getPasswordHash(), Jane.getPasswordHash());
         });
-        it('should return different values for similar passwords for one user', function() {
+        it('should return different values for different passwords for one user', function() {
             u.setPassword('pass');
             var pass = u.getPasswordHash();
             assert.equal(u.checkPassword('pass'), true);
