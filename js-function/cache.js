@@ -15,15 +15,15 @@ var Cache = (function() {
         var success = true;
         if (!this.__check_mandatory(key)) {
             success = false;
-            console.log('Field `key\' is required');
+            throw new Error('Field `key\' is required');
         }
         if (!this.__check_mandatory(value)) {
             success = false;
-            console.log('Field `value\' is required');
+            throw new Error('Field `value\' is required');
         }
         if (!this.__check_unique_key(key)) {
             success = false;
-            console.log('Key must be unique');
+            throw new Error('Field `key\' must be unique');
         }
         if (success) {
             this.value[key] = value;
@@ -33,11 +33,11 @@ var Cache = (function() {
         var success = true;
         if (!this.__check_mandatory(key)) {
             success = false;
-            console.log('Field `key\' is required');
+            throw new Error('Field `key\' is required');
         }
         if (!this.__check_mandatory(value)) {
             success = false;
-            console.log('Field `value\' is required');
+            throw new Error('Field `value\' is required');
         }
         if (success) {
             this.value[key] = value;
@@ -47,7 +47,7 @@ var Cache = (function() {
         var success = true;
         if (!this.__check_mandatory(key)) {
             success = false;
-            console.log('Field `key\' is required');
+            throw new Error('Field `key\' is required');
         }
         if (success) {
             return this.value[key];
@@ -57,30 +57,42 @@ var Cache = (function() {
         var success = true;
         if (!this.__check_mandatory(key)) {
             success = false;
-            console.log('Field `key\' is required');
+            throw new Error('Field `key\' is required');
         }
         if (success) {
-            if (!delete a[key]) {
-                console.log("Cannot delete value with key " + key);
-            }
+            delete this.value[key];
         }
     };
     proto.find = function (query) {
         var isSubstring = function (substring) {
-            return query.indexOf(substring) > -1;
+            return substring.toString().indexOf(query.toString()) > -1;
         };
-        return validKeys.map(getPair);
+        validKeys = [];
+        for (var k in this.value) {
+            if (isSubstring(this.value[k])) {
+                var cur = {};
+                cur[k] = this.value[k];
+                validKeys.push(cur);
+            }
+        }
+        return validKeys;
     };
     proto.count = function (key) {
         if (key !== undefined) {
-            return this.value[key].toString().length;
+            if (this.value[key] !== undefined) {
+                return new String(this.value[key]).length;
+            } else {
+                return 0;
+            }
         } else {
             var sumCallback = function(sum, cur) {
                 return sum + cur;
             };
             var counts = Object.keys(this.value).map(proto.count, this);
-            return counts.reduce(sumCallback);
+            return counts.reduce(sumCallback, 0);
         }
     };
     return constructor;
 })();
+
+module.exports = {Cache: Cache};
