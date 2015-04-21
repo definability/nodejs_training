@@ -1,0 +1,15 @@
+{
+  "name": "ws-transfer",
+  "version": "0.0.1",
+  "description": "WebSocket file transfer example with speed displaying",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "char-lie",
+  "license": "MIT",
+  "dependencies": {
+    "mocha": "~2.2.4",
+    "ws": "~0.7.1"
+  }
+}
