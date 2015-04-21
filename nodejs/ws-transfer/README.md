@@ -13,5 +13,5 @@ node server.js
 Start the client. It will send the file zeros.txt by default which will be saved to out.txt:
 
 ```
-node server.js
+node client.js
 ```
