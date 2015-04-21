@@ -1,0 +1,14 @@
+{
+  "name": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Node.JS module exercise",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "mocha": "~2.2.4"
+  }
+}
