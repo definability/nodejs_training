@@ -1,3 +1,4 @@
+#!/usr/bin/node
 var WebSocket = require('ws');
 
 if (!module.parent) {

@@ -1,3 +1,4 @@
+#!/usr/bin/node
 var WebSocketServer = require('ws').Server;
 var fs = require('fs');
 var Cache = require('./module');
