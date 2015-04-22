@@ -7,7 +7,7 @@ WebSocket file transfer example with speed displaying.
 Start the server. It will be on port 8080 by default:
 
 ```
-node server.js
+node server.js [port]
 ```
 
 Start the client. It will send the file zeros.txt by default which will be saved to out.txt:

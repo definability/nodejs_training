@@ -1,24 +1,58 @@
 var WebSocket = require('ws');
-var ws = new WebSocket('ws://127.0.0.1:8080');
- 
-ws.on('open', function open() {
-    /*
-    var array = new Float32Array(5);
-    for (var i = 0; i < array.length; ++i) {
-        array[i] = i / 2;
+
+if (!module.parent) {
+
+    var filename
+    filename = process.argv[2];
+    if (!filename) {
+        console.error('Filename must be specified!');
+        return;
     }
-    */
-    var readStream = require('fs').createReadStream('./zeros.txt', {
+
+    var host, ws;
+
+    host = process.argv[3] ? process.argv[3] : '127.0.0.1:8080';
+    ws = new WebSocket('ws://'.concat(host));
+     
+    ws.on('error', function (error) {
+        console.error(['Problem occured:', error].join(' '));
+    });
+
+    var readStream = require('fs').createReadStream(filename, {
         flags: 'r',
         encoding: 'binary',
     });
-    readStream.on('data', function (data) {
-        var buffer = new Buffer(data);
-        //var buffer = new Buffer("Sent");
-        ws.send(buffer);
-        // console.log("read", buffer);
+    readStream.on('open', function() {
+        console.log('File opened!');
     });
-    readStream.on('end', function () {
-        ws.close();
+    readStream.on('error', function (error) {
+        console.error(['Problem occured:', error].join(' '));
     });
-});
+
+    ws.on('open', function() {
+        readStream.removeAllListeners('error');
+        readStream.on('error', function (error) {
+            console.error(['Problem occured:', error].join(' '));
+            ws.close();
+        });
+        ws.send(filename);
+        ws.once('message', function (message) {
+            console.log(message);
+            if (message[0] === '+') {
+                console.log('Successfully connected');
+            } else {
+                console.log('Cannot upload the file');
+                return;
+            }
+            readStream.on('data', function (data) {
+                var buffer = new Buffer(data);
+                ws.send(buffer);
+            });
+            readStream.on('end', function () {
+                console.log('Uploaded');
+                ws.close();
+            });
+        });
+    });
+} else {
+}
