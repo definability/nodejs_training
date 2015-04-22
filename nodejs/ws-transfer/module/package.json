@@ -5,10 +5,8 @@
   "description": "Node.JS module exercise",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "mocha"
+    "start": "node index.js"
   },
   "dependencies": {
-    "mocha": "~2.2.4"
   }
 }

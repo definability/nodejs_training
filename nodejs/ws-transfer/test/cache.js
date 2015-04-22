@@ -1,5 +1,5 @@
 var assert = require("assert");
-var Cache = require("../cache.js").Cache;
+var Cache = require("../module");
 
 describe('Cache', function() {
     var c;
