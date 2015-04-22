@@ -30,7 +30,7 @@ var Server = (function() {
         var onFileTransferred = function (filename, filestream) {
             var result = function () {
                 displaySpeed(filename);
-                console.log(['Transferred file', filename].join(' '));
+                console.log([filename, 'transferred'].join(' '));
                 filestream.end();
                 cache.delete(filename);
             };
@@ -63,10 +63,10 @@ var Server = (function() {
                 } catch (e) {
                     ws.send(getFileErrorMessage(filename));
                     ws.close();
-                    console.log(['Connection refused for file', filename].join(' '));
+                    console.log([filename, 'connection refused'].join(' '));
                     return;
                 }
-                console.log(['Connected client', filename].join(' '));
+                console.log([filename, 'client connected', ].join(' '));
                 var filestream = fs.createWriteStream(['uploads', filename].join('/'), {
                     flags: 'w',
                     encoding: 'binary',
