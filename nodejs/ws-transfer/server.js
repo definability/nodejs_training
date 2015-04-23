@@ -116,9 +116,12 @@ var Server = (function() {
             });
         };
 
-        proto.init = function(port) {
+        proto.init = function(port, onSuccess) {
             this.setPort(port);
             wss = new WebSocketServer({port: this.getPort()});
+            wss.on('open', function() {
+                console.log('Opened');
+            });
             log(['Successfully connected to ', wss.options.host, ':', wss.options.port].join(''));
             wss.on('error', function (error) {
                 console.error(['Problem occured:', error].join(' '));
@@ -127,6 +130,9 @@ var Server = (function() {
                 log(['Successfully connected to port', port].join(' '));
             });
             wss.on('connection', onClientConnected);
+            if (onSuccess !== undefined) {
+                onSuccess();
+            }
         };
     };
     var proto = constructor.prototype;

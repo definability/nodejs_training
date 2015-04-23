@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "WebSocket file transfer example with speed displaying",
   "scripts": {
+    "start": "node index.js",
     "test": "mocha"
   },
   "author": "char-lie",
