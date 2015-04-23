@@ -3,6 +3,14 @@ var WebSocketServer = require('ws').Server;
 var fs = require('fs');
 var Cache = require('./module');
 
+var log = function(message, filename) {
+    if (filename === undefined) {
+        console.log(['[', Date.now(), '] ', message].join(''));
+    } else {
+        console.log(['[', Date.now(), '] ', filename, ': ', message].join(''));
+    }
+};
+
 var Server = (function() {
     var constructor = function() {
         var port, wss, cache;
@@ -25,11 +33,12 @@ var Server = (function() {
             return info.size/(currentTime - info.time) * MILLISECONDS_IN_SECOND;
         };
         var displaySpeed = function (filename) {
-            console.log([filename, ': ', getSpeed(filename)/BYTES_IN_MB, ' MB/s'].join(''));
+            log([getSpeed(filename)/BYTES_IN_MB, ' MB/s'].join(''), filename);
         };
-
+        /*
         var onFileTransferred = function (filename, filestream) {
             var result = function () {
+                cache.get(filename).connection.send(['+OK: file', filename, 'uploaded'].join(' '));
                 displaySpeed(filename);
                 console.log([filename, 'transferred'].join(' '));
                 filestream.end();
@@ -37,15 +46,34 @@ var Server = (function() {
             };
             return result;
         };
+        */
+        var onFileTransferred = function (filename, filestream) {
+            var ws = cache.get(filename).connection;
+            ws.send(['+OK: file', filename, 'uploaded'].join(' '));
+            displaySpeed(filename);
+            log('file transferred', filename);
+            filestream.end();
+            ws.close();
+            cache.delete(filename);
+        };
         var onChunkReceived = function (filename, filestream) {
             var result = function (chunk) {
+                if (typeof(chunk) === 'string') {
+                    //cache.get(filename).connection.close();
+                    onFileTransferred(filename, filestream);
+                    return;
+                }
+                //console.log(typeof chunk);
                 var currentTime = Date.now();
                 var info = cache.get(filename);
                 if (currentTime - info.time >= SPEED_CHECK_PERIOD) {
                     displaySpeed(filename);
-                    cache.update(filename, {time: currentTime, size: 0});
+                    info.time = currentTime;
+                    info.size = 0;
+                    cache.update(filename, info);
                 } else {
-                    cache.update(filename, {time: info.time, size: info.size + chunk.length});
+                    info.size += chunk.length;
+                    cache.update(filename, info);
                 }
                 filestream.write(chunk);
             };
@@ -64,10 +92,10 @@ var Server = (function() {
                 } catch (e) {
                     ws.send(getFileErrorMessage(filename));
                     ws.close();
-                    console.log([filename, 'connection refused'].join(' '));
+                    log('connection refused', filename);
                     return;
                 }
-                console.log([filename, 'client connected', ].join(' '));
+                log('client connected', filename);
                 var filestream = fs.createWriteStream(['uploads', filename].join('/'), {
                     flags: 'w',
                     encoding: 'binary',
@@ -79,11 +107,11 @@ var Server = (function() {
                     console.error(['Problem occured:', error].join(' '));
                 });
                 filestream.once('open', function() {
-                    console.error([filename, 'File transfer started'].join(' '));
+                    log('file transfer started', filename);
                     ws.send(getFileOkMessage(filename));
-                    cache.update(filename, {time: Date.now(), size: 0});
+                    cache.update(filename, {time: Date.now(), size: 0, connection: ws});
                     ws.on('message', onChunkReceived(filename, filestream));
-                    ws.on('close', onFileTransferred(filename, filestream));
+                    //ws.on('close', onFileTransferred(filename, filestream));
                 });
             });
         };
@@ -91,12 +119,12 @@ var Server = (function() {
         proto.init = function(port) {
             this.setPort(port);
             wss = new WebSocketServer({port: this.getPort()});
-            console.log(['Successfully connected to ', wss.options.host, ':', wss.options.port].join(''));
+            log(['Successfully connected to ', wss.options.host, ':', wss.options.port].join(''));
             wss.on('error', function (error) {
                 console.error(['Problem occured:', error].join(' '));
             });
             wss.on('', function() {
-                console.log(['Successfully connected to port', port].join(' '));
+                log(['Successfully connected to port', port].join(' '));
             });
             wss.on('connection', onClientConnected);
         };
