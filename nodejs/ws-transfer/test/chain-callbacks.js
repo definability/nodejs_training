@@ -1,5 +1,5 @@
 var assert = require("assert");
-var chain = require("../chain-callbacks.js");
+var chain = require("../module/chain-callbacks.js");
 
 var makeChain = chain.makeChain,
     callChain = chain.callChain;

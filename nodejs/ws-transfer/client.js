@@ -1,7 +1,7 @@
 #!/usr/bin/node
 var WebSocket = require('ws');
 var fs = require('fs');
-var callChain = require('./chain-callbacks.js').callChain;
+var callChain = require('./module/chain-callbacks.js').callChain;
 
 var Client = (function() {
     var constructor = function(host, filename) {

@@ -35,18 +35,6 @@ var Server = (function() {
         var displaySpeed = function (filename) {
             log([getSpeed(filename)/BYTES_IN_MB, ' MB/s'].join(''), filename);
         };
-        /*
-        var onFileTransferred = function (filename, filestream) {
-            var result = function () {
-                cache.get(filename).connection.send(['+OK: file', filename, 'uploaded'].join(' '));
-                displaySpeed(filename);
-                console.log([filename, 'transferred'].join(' '));
-                filestream.end();
-                cache.delete(filename);
-            };
-            return result;
-        };
-        */
         var onFileTransferred = function (filename, filestream) {
             var ws = cache.get(filename).connection;
             ws.send(['+OK: file', filename, 'uploaded'].join(' '));
@@ -59,11 +47,9 @@ var Server = (function() {
         var onChunkReceived = function (filename, filestream) {
             var result = function (chunk) {
                 if (typeof(chunk) === 'string') {
-                    //cache.get(filename).connection.close();
                     onFileTransferred(filename, filestream);
                     return;
                 }
-                //console.log(typeof chunk);
                 var currentTime = Date.now();
                 var info = cache.get(filename);
                 if (currentTime - info.time >= SPEED_CHECK_PERIOD) {
@@ -111,27 +97,25 @@ var Server = (function() {
                     ws.send(getFileOkMessage(filename));
                     cache.update(filename, {time: Date.now(), size: 0, connection: ws});
                     ws.on('message', onChunkReceived(filename, filestream));
-                    //ws.on('close', onFileTransferred(filename, filestream));
                 });
             });
         };
-
-        proto.init = function(port, onSuccess) {
+        proto.init = function (port, onSuccess) {
             this.setPort(port);
-            wss = new WebSocketServer({port: this.getPort()});
-            wss.on('open', function() {
-                console.log('Opened');
-            });
-            log(['Successfully connected to ', wss.options.host, ':', wss.options.port].join(''));
-            wss.on('error', function (error) {
-                console.error(['Problem occured:', error].join(' '));
-            });
-            wss.on('', function() {
+            wss = new WebSocketServer({port: this.getPort()}, function() {
                 log(['Successfully connected to port', port].join(' '));
+                wss.on('error', function (error) {
+                    console.error(['Problem occured:', error].join(' '));
+                });
+                wss.on('connection', onClientConnected);
+                if (onSuccess !== undefined) {
+                    onSuccess();
+                }
             });
-            wss.on('connection', onClientConnected);
-            if (onSuccess !== undefined) {
-                onSuccess();
+        };
+        proto.close = function() {
+            if (wss !== undefined) {
+                wss.close();
             }
         };
     };
@@ -142,7 +126,9 @@ var Server = (function() {
 if (!module.parent) {
     var s = new Server();
     var port = process.argv[2] ? process.argv[2] : '8080';
-    s.init(port);
+    s.init(port, function() {
+        s.close();
+    });
 } else {
     module.exports = Server;
 }
