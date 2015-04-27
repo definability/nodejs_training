@@ -1,13 +1,9 @@
 var express = require('express'),
-    bodyParser = require('body-parser'),
-    app = express(),
     assert = require('assert'),
     router = express.Router(),
     MongoClient = require('mongodb').MongoClient,
     ObjectId = require('mongodb').ObjectId,
     Users = require('../models/Users.js');
-
-app.use(bodyParser.urlencoded({ extended: false }));
 
 var url = 'mongodb://localhost:27017/chatroom',
     connect = function (callback) {
@@ -18,8 +14,7 @@ var url = 'mongodb://localhost:27017/chatroom',
     };
 
 router.get('/', function(request, response, next) {
-    MongoClient.connect(url, function(err, db) {
-        assert.equal(err, null);
+    connect(function(db) {
         var users = new Users();
         users.connect(db);
         users.get({}, function (err, got) {
@@ -30,22 +25,31 @@ router.get('/', function(request, response, next) {
 });
 
 router.get('/:id', function(request, response, next) {
-    MongoClient.connect(url, function(err, db) {
-        assert.equal(err, null);
-        var users = new Users();
+    connect(function(db) {
+        var users,
+            userId;
+        try {
+            userId = ObjectId(request.params.id);
+        } catch (e) {
+        }
+        users = new Users();
         users.connect(db);
-        users.get({_id: ObjectId(request.params.id)}, function (err, got) {
+        users.get({_id: userId}, function (err, got) {
             assert.equal(err, null);
-            response.json(got);
+            if (got.length == 0) {
+                response.status(404).send('Not found');
+            } else {
+                response.json(got);
+            }
         });
     });
 });
 
-app.post('/', function(request, response) {
+router.post('/', function(request, response) {
     var users = new Users();
     connect(function (db) {
         users.connect(db);
-        users.post(request.body, function (err, result) {
+        users.post([request.body], function (err, result) {
             assert.equal(err, null);
             users.close();
             response.json(result.result);

@@ -7,15 +7,6 @@ createModel = function (schemaInfo) {
             name: schemaInfo.name,
             fields: ['_id']
         };
-        var toJSON = function(record) {
-            return schema.fields.reduce(function(result, field) {
-                result[field] = record[field];
-                return result;
-            }, {});
-        };
-        var parsers = {
-            json: toJSON
-        };
         Array.prototype.push.apply(schema.fields, schemaInfo.fields);
         Object.freeze(schema);
         this.connect = function (db) {
