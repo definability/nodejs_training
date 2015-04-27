@@ -25,8 +25,8 @@ describe('Users', function() {
             assert.equal(schema.name, 'users');
         });
         it('fields should contain _id, name, creationDate, email and address', function() {
-            var actualFields = users.getSchema()['fields'];
-            var neededFields = ['_id', 'name', 'creationDate', 'email', 'address'];
+            var actualFields = users.getSchema()['fields'],
+                neededFields = ['_id', 'name', 'creationDate', 'email', 'address'];
             assert.deepEqual(actualFields.sort(), neededFields.sort());
         });
     });
@@ -59,47 +59,54 @@ describe('Users', function() {
             });
         });
         it('gets users list properly', function(done) {
+            var onInsert, onGet, currentUser, collection, currentUser;
+            onInsert = function (err, result) {
+                assert.equal(err, null);
+                users.get({}, onGet);
+            };
+            onGet = function(err, got) {
+                assert.equal(err, null);
+                assert.equal(got.length, 1);
+                assert.deepEqual(currentUser, got[0]);
+                done();
+            };
             connect(function (db) {
                 users.connect(db);
-                var collection = users.getCollection(),
-                    currentUser = {name: faker.name.findName(), creationDate: Date.now(),
+                collection = users.getCollection();
+                currentUser = {name: faker.name.findName(), creationDate: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()};
-                collection.insert([currentUser], function (err, result) {
-                    assert.equal(err, null);
-                    users.get({}, function(err, got) {
-                        assert.equal(err, null);
-                        assert.equal(got.length, 1);
-                        assert.deepEqual(currentUser, got[0]);
-                        done();
-                    });
-                });
+                collection.insert([currentUser], onInsert);
             });
         });
     });
     describe('#delete(parameters, callback)', function() {
         it('deletes all users successfully', function(done) {
+            var onDelete = function(err, result) {
+                assert.equal(err, null);
+                done();
+            };
             connect(function (db) {
                 users.connect(db);
-                users.delete({}, function(err, result) {
-                    assert.equal(err, null);
-                    done();
-                });
+                users.delete({}, onDelete);
             });
         });
         it('deletes concrete users successfully', function(done) {
+            var onInsert, onDelete, collection, currentUser;
+            onInsert = function (err, result) {
+                assert.equal(err, null);
+                users.delete({}, onDelete);
+            };
+            onDelete = function(err, deleted) {
+                assert.equal(err, null);
+                assert.equal(deleted.result.n, 1);
+                done();
+            }
             connect(function (db) {
                 users.connect(db);
-                var collection = users.getCollection(),
-                    currentUser = {name: faker.name.findName(), creationDate: Date.now(),
+                collection = users.getCollection();
+                currentUser = {name: faker.name.findName(), creationDate: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()};
-                collection.insert([currentUser], function (err, result) {
-                    assert.equal(err, null);
-                    users.delete({}, function(err, deleted) {
-                        assert.equal(err, null);
-                        assert.equal(deleted.result.n, 1);
-                        done();
-                    });
-                });
+                collection.insert([currentUser], onInsert);
             });
         });
     });
@@ -125,7 +132,16 @@ describe('Users', function() {
             });
         });
         it('inserts list of users successfully', function(done) {
-            var newUsers = [
+            var onGet, onDelete, newUsers;
+            onGet = function(err, documents) {
+                users.delete({}, onDelete);
+            };
+            onDelete = function(err, deleted) {
+                assert.equal(err, null);
+                assert.equal(deleted.result.n, 3);
+                done();
+            };
+            newUsers = [
                 {name: faker.name.findName(), creationDate: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()},
                 {name: faker.name.findName(), creationDate: Date.now(),
@@ -138,18 +154,31 @@ describe('Users', function() {
                 users.post(newUsers, function(err, result) {
                     assert.equal(err, null);
                     assert.equal(result.result.n, 3);
-                    users.get({}, function(err, documents) {
-                        users.delete({}, function(err, deleted) {
-                            assert.equal(err, null);
-                            assert.equal(deleted.result.n, 3);
-                            done();
-                        });
-                    });
+                    users.get({}, onGet);
                 });
             });
         });
         it('inserts list of users correctly', function(done) {
-            var newUsers = [
+            var onPost, checkUser, newUsers;
+            onPost = function(err, result) {
+                assert.equal(err, null);
+                assert.equal(result.result.n, 3);
+                var actions = newUsers.map(function (user) {
+                    return checkUser(user);
+                });
+                _(actions).reduceRight(_.wrap, done)();
+            };
+            checkUser = function (user) {
+                var result = function (callback) {
+                        users.get(user, function(err, documents) {
+                        assert.equal(err, null);
+                        assert.equal(documents.length, 1);
+                        callback();
+                    });
+                };
+                return result;
+            };
+            newUsers = [
                 {name: faker.name.findName(), creationDate: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()},
                 {name: faker.name.findName(), creationDate: Date.now(),
@@ -159,40 +188,29 @@ describe('Users', function() {
             ];
             connect(function (db) {
                 users.connect(db);
-                users.post(newUsers, function(err, result) {
-                    assert.equal(err, null);
-                    assert.equal(result.result.n, 3);
-                    var checkUser = function (user) {
-                        var result = function (callback) {
-                                users.get(user, function(err, documents) {
-                                assert.equal(err, null);
-                                assert.equal(documents.length, 1);
-                                callback();
-                            });
-                        };
-                        return result;
-                    };
-                    var actions = newUsers.map(function (user) { return checkUser(user); });
-                    _(actions).reduceRight(_.wrap, done)();
-                });
+                users.post(newUsers, onPost);
             });
         });
         it('works with empty array', function(done) {
-            var newUsers = [];
+            var newUsers = [],
+                onPost;
+            onPost = function(err, result) {
+                assert.equal(err, null);
+                assert.equal(result.result.n, 0);
+                done();
+            };
             connect(function (db) {
                 users.connect(db);
-                users.post(newUsers, function(err, result) {
-                    assert.equal(err, null);
-                    assert.equal(result.result.n, 0);
-                    done();
-                });
+                users.post(newUsers, onPost);
             });
         });
         it('does not work without callback', function(done) {
             var newUsers = [];
             connect(function (db) {
                 users.connect(db);
-                assert.throws(function() { users.post(newUsers); });
+                assert.throws(function() {
+                    users.post(newUsers);
+                });
                 done();
             });
         });
@@ -200,7 +218,9 @@ describe('Users', function() {
             var newUsers = undefined;
             connect(function (db) {
                 users.connect(db);
-                assert.throws(function() { users.post(newUsers, function(err, result) {}); });
+                assert.throws(function() {
+                    users.post(newUsers, function(err, result) {});
+                });
                 done();
             });
         });
