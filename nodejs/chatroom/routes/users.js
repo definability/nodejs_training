@@ -1,68 +1,55 @@
-var express = require('express');
-var assert = require('assert');
-var router = express.Router();
+var express = require('express'),
+    bodyParser = require('body-parser'),
+    app = express(),
+    assert = require('assert'),
+    router = express.Router(),
+    MongoClient = require('mongodb').MongoClient,
+    ObjectId = require('mongodb').ObjectId,
+    Users = require('../models/Users.js');
 
-var MongoClient = require('mongodb').MongoClient,
-    ObjectId = require('mongodb').ObjectId;
+app.use(bodyParser.urlencoded({ extended: false }));
 
-var insertTestUsers = function(db) {
-    var collection = db.collection('users');
-    collection.insert([
-        {name: 'Ivan', creationDate: Date.now(), email: 'e@mail.com', address: 'Address St. 1'},
-        {name: 'Valisy', creationDate: Date.now(), email: 'em@ail.com', address: 'Address St. 2'},
-        {name: 'Petr', creationDate: Date.now(), email: 'ema@il.com', address: 'Address St. 3'},
-        ], function(err, result) {
+var url = 'mongodb://localhost:27017/chatroom',
+    connect = function (callback) {
+            MongoClient.connect(url, function(err, db) {
             assert.equal(err, null);
-            console.log(result.result.n, result.ops);
+            callback(db);
         });
-};
+    };
 
-var getUsers = function(db, id, callback, res) {
-    var collection = db.collection('users');
-    var findDictionary = {};
-    if (id !== undefined) {
-        try {
-            findDictionary['_id'] = ObjectId(id);
-        } catch(e) {
-            callback(undefined, res);
-            return;
-        }
-    }
-    collection.find(findDictionary).toArray(function(err, docs) {
-        assert.equal(err, null);
-        callback(docs, res);
-    });
-};
-
-var showUsers = function(users, res) {
-    //console.log('users', users);
-    if (users === undefined) {
-        res.send("Error");
-        return;
-    } else {
-        var userNames = users.map(function(user) {
-            //console.log(user.name);
-            return user;
-        });
-        res.json(userNames);
-    }
-};
-
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-    var url = 'mongodb://localhost:27017/chatroom';
+router.get('/', function(request, response, next) {
     MongoClient.connect(url, function(err, db) {
         assert.equal(err, null);
-        getUsers(db, undefined, showUsers, res);
+        var users = new Users();
+        users.connect(db);
+        users.get({}, function (err, got) {
+            assert.equal(err, null);
+            response.json(got);
+        });
     });
 });
 
-router.get('/:id', function(req, res, next) {
-    var url = 'mongodb://localhost:27017/chatroom';
+router.get('/:id', function(request, response, next) {
     MongoClient.connect(url, function(err, db) {
         assert.equal(err, null);
-        //console.log(req.params.id);
-        getUsers(db, req.params.id, showUsers, res);
+        var users = new Users();
+        users.connect(db);
+        users.get({_id: ObjectId(request.params.id)}, function (err, got) {
+            assert.equal(err, null);
+            response.json(got);
+        });
+    });
+});
+
+app.post('/', function(request, response) {
+    var users = new Users();
+    connect(function (db) {
+        users.connect(db);
+        users.post(request.body, function (err, result) {
+            assert.equal(err, null);
+            users.close();
+            response.json(result.result);
+        });
     });
 });
 
