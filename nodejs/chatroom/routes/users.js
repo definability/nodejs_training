@@ -1,6 +1,8 @@
 var express = require('express'),
+    _ = require('lodash'),
     assert = require('assert'),
     router = express.Router(),
+    http = require('http'),
     MongoClient = require('mongodb').MongoClient,
     ObjectId = require('mongodb').ObjectId,
     Users = require('../models/Users.js'),
@@ -14,6 +16,11 @@ var url = 'mongodb://localhost:27017/chatroom',
         });
     };
 
+var sendError = function (response, statusName) {
+    var statusCode = _.invert(http.STATUS_CODES)[statusName][0];
+    response.status(statusCode).json({success: false, error: http.STATUS_CODES[statusCode]});
+};
+
 router.get('/', function(request, response, next) {
     connect(function(db) {
         var users = new Users();
@@ -26,19 +33,16 @@ router.get('/', function(request, response, next) {
 });
 
 router.get('/:id', function(request, response, next) {
+    var onUserNotFound = function (error) {
+        sendError(response, 'Not Found');
+    };
     connect(function(db) {
-        var users,
-            userId;
-        try {
-            userId = ObjectId(request.params.id);
-        } catch (e) {
-        }
+        var users;
         users = new Users();
         users.connect(db);
-        users.get({_id: userId}, function (err, got) {
-            assert.equal(err, null);
-            if (got.length == 0) {
-                response.status(404).json({success: false, error: 'Not found'});
+        users.findById(request.params.id, function (err, got) {
+            if (err != null || got.length == 0) {
+                onUserNotFound(err);
             } else {
                 response.json({success: true, response: got});
             }
@@ -56,33 +60,30 @@ router.post('/', function(request, response, next) {
             }
             users.post([request.body], function (err, result) {
                 assert.equal(err, null);
-                users.close();
                 response.json({success: result.result.ok == 1, response: {users: result.ops}});
             });
         } catch (e) {
-            response.status(400).json({success: false, error: 'Wrong user data'});
+            sendError(response, 'Bad Request');
         }
     });
 });
 
 router.delete('/', function(request, response, next) {
-    response.status(400).json({success: false, error: 'You can\'t truncate the collection'});
+    sendError(response, 'Bad Request');
 });
 
 router.delete('/:id', function(request, response, next) {
+    var onUserNotFound = function (error) {
+        sendError(response, 'Not Found');
+    };
     connect(function(db) {
         var users,
             userId;
-        try {
-            userId = ObjectId(request.params.id);
-        } catch (e) {
-        }
         users = new Users();
         users.connect(db);
-        users.delete({_id: userId}, function (err, deleted) {
-            assert.equal(err, null);
-            if (deleted.length == 0) {
-                response.status(404).json({success: false, error: 'Not found'});
+        users.deleteById(request.params.id, function (err, deleted) {
+            if (err != null || deleted.length == 0) {
+                onUserNotFound(err);
             } else {
                 response.json({success: deleted.result.ok == 1, response: {count: deleted.result.n}});
             }

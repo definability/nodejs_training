@@ -74,7 +74,7 @@ describe('HTTP server with Users', function() {
             });
             request.end();
         });
-        it('should get previously user', function (done) {
+        it('should get previously added user', function (done) {
             var request = generateRequest('GET', function (data) {
                 dataJSON = JSON.parse(data);
                 assert.equal(dataJSON.success, true);
@@ -109,5 +109,15 @@ describe('HTTP server with Users', function() {
             }, currentUser._id);
             request.end();
         });
+        it('deleting of not existing user cannot be successful', function (done) {
+            var request = generateRequest('DELETE', function (data) {
+                dataJSON = JSON.parse(data);
+                assert.equal(dataJSON.success, true);
+                assert.equal(dataJSON.response.count, 0);
+                done();
+            }, currentUser._id);
+            request.end();
+        });
+
     });
 });

@@ -16,11 +16,6 @@ describe('Users', function() {
     beforeEach(function() {
         users = new Users();
     });
-    afterEach(function() {
-        if (users.isConnected()) {
-            users.close();
-        }
-    });
     describe('#getSchema()', function() {
         it('name should be `users\'', function() {
             var schema = users.getSchema();
@@ -51,6 +46,17 @@ describe('Users', function() {
             connect(function (db) {
                 users.connect(db);
                 done();
+            });
+        });
+    });
+    describe('#close(callback)', function() {
+        it('sucessfully closes connection', function(done) {
+            connect(function (db) {
+                users.connect(db);
+                users.close(function(err, result) {
+                    assert.equal(err, null);
+                    done();
+                });
             });
         });
     });
@@ -225,14 +231,14 @@ describe('Users', function() {
                 done();
             });
         });
-        it('throws an error when trying to insert not an array', function(done) {
+        it('gives error to callback function when trying to insert not an array', function(done) {
             var newUsers = undefined;
             connect(function (db) {
                 users.connect(db);
-                assert.throws(function() {
-                    users.post(newUsers, function(err, result) {});
+                users.post(newUsers, function(err, result) {
+                    assert.notEqual(err, null);
+                    done();
                 });
-                done();
             });
         });
     });
