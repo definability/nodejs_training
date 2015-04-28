@@ -66,15 +66,7 @@ router.post('/', function(request, response, next) {
 });
 
 router.delete('/', function(request, response, next) {
-    var users = new Users();
-    connect(function (db) {
-        users.connect(db);
-        users.delete(request.body, function (err, result) {
-            assert.equal(err, null);
-            users.close();
-            response.json({success: result.result.ok == 1});
-        });
-    });
+    response.status(400).json({success: false, error: 'You can\'t truncate the collection'});
 });
 
 router.delete('/:id', function(request, response, next) {

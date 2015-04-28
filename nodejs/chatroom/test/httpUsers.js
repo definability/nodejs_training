@@ -33,14 +33,14 @@ describe.only('HTTP server with Users', function() {
         return request;
     };
     describe('#POST', function() {
-        it('Should post blank user with error', function (done) {
+        it('should post blank user with error', function (done) {
             var request = generateRequest('POST', function (data) {
                 assert.equal(JSON.parse(data).success, false);
                 done();
             });
             request.end();
         });
-        it('Should post user correctly', function (done) {
+        it('should post user correctly', function (done) {
             currentUser = {
                 name: faker.name.findName(),
                 creationDate: Date.now(),
@@ -60,21 +60,21 @@ describe.only('HTTP server with Users', function() {
         });
     });
     describe('#GET', function() {
-        it('Should return JSON', function (done) {
+        it('should return JSON', function (done) {
             var request = generateRequest('GET', function (data) {
                 assert.doesNotThrow(function() { JSON.parse(data); });
                 done();
             });
             request.end();
         });
-        it('Should be success', function (done) {
+        it('should be success', function (done) {
             var request = generateRequest('GET', function (data) {
                 assert.equal(JSON.parse(data).success, true);
                 done();
             });
             request.end();
         });
-        it('Should get previously user', function (done) {
+        it('should get previously user', function (done) {
             var request = generateRequest('GET', function (data) {
                 dataJSON = JSON.parse(data);
                 assert.equal(dataJSON.success, true);
@@ -86,7 +86,14 @@ describe.only('HTTP server with Users', function() {
         });
     });
     describe('#DELETE', function() {
-        it('Should delete users got in previous tests without error', function (done) {
+        it('deletion of all users should not be success', function (done) {
+            var request = generateRequest('DELETE', function (data) {
+                assert.equal(JSON.parse(data).success, false);
+                done();
+            });
+            request.end();
+        });
+        it('should delete users got in previous tests without error', function (done) {
             var request = generateRequest('DELETE', function (data) {
                 dataJSON = JSON.parse(data);
                 assert.equal(dataJSON.success, true);
@@ -95,7 +102,7 @@ describe.only('HTTP server with Users', function() {
             }, currentUser._id);
             request.end();
         });
-        it('Deleted user should not exist anymore', function (done) {
+        it('deleted user should not exist anymore', function (done) {
             var request = generateRequest('GET', function (data) {
                 dataJSON = JSON.parse(data);
                 assert.equal(dataJSON.success, false);
