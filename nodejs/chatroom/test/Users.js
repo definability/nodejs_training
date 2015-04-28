@@ -17,7 +17,9 @@ describe('Users', function() {
         users = new Users();
     });
     afterEach(function() {
-        users.close(true);
+        if (users.isConnected()) {
+            users.close();
+        }
     });
     describe('#getSchema()', function() {
         it('name should be `users\'', function() {
@@ -28,6 +30,15 @@ describe('Users', function() {
             var actualFields = users.getSchema()['fields'],
                 neededFields = ['_id', 'name', 'creationDate', 'email', 'address'];
             assert.deepEqual(actualFields.sort(), neededFields.sort());
+        });
+    });
+    describe('#processObject(newObject)', function() {
+        it('returns only schema fields', function() {
+            var newObject, processObject;
+            newObject = {name: 'Peter', unknownField: 'Unknown value'};
+            processedObject = users.processObject(newObject);
+            assert.notDeepEqual(processedObject, newObject);
+            assert.deepEqual(processedObject, {name: 'Peter'});
         });
     });
     describe('#connect(db)', function() {

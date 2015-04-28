@@ -1,8 +1,10 @@
+var _ = require('lodash');
+
 var createModel;
 
 createModel = function (schemaInfo) {
     var constructor = function (res, next) {
-        var database, collection;
+        var database, collection, connected = false;
         var schema = {
             name: schemaInfo.name,
             fields: ['_id']
@@ -14,21 +16,14 @@ createModel = function (schemaInfo) {
                 database = db;
             }
             collection = database.collection(schema['name']);
+            connected = true;
         };
         this.close = function (forced) {
-            if (forced === undefined) {
-                forced = false;
-            }
-            if (forced) {
-                try {
-                    database.close();
-                } catch(e) {
-                }
-            } else if (database !== undefined) {
-                database.close();
-            } else {
-                throw Error('You have not connected to database yet');
-            }
+            database.close();
+            connected = false;
+        };
+        this.isConnected = function() {
+            return connected;
         };
         this.getSchema = function() {
             return schema;
@@ -45,12 +40,7 @@ createModel = function (schemaInfo) {
         this.getCollection().find(parameters).toArray(callback);
     };
     proto.processObject = function (newObject) {
-        return this.getSchema()['fields'].reduce(function (result, field) {
-            if (newObject[field] !== undefined) {
-                result[field] = newObject[field];
-            }
-            return result;
-        }, {});
+        return _.pick(newObject, this.getSchema().fields);
     }
     proto.post = function (objects, callback) {
         if (!Array.isArray(objects)) {
