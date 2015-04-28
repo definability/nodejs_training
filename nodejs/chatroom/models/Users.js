@@ -1,7 +1,7 @@
-var createModel = require('./Model.js').createModel;
+var MetaModel = require('./Model.js').MetaModel;
 var Users;
 
-Users = createModel({
+Users = new MetaModel({
     name: 'users',
     fields: ['name', 'creationDate', 'email', 'address']
 });
