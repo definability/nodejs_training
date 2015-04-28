@@ -7,7 +7,7 @@ var host = 'localhost',
     path = '/users',
     url = ['http://', host, ':', port, path].join('');
 
-describe.only('HTTP server with Users', function() {
+describe('HTTP server with Users', function() {
     var currentUser;
     var generateRequest = function (method, onEnd, pathAppendix) {
         if (pathAppendix === undefined) {
@@ -104,8 +104,7 @@ describe.only('HTTP server with Users', function() {
         });
         it('deleted user should not exist anymore', function (done) {
             var request = generateRequest('GET', function (data) {
-                dataJSON = JSON.parse(data);
-                assert.equal(dataJSON.success, false);
+                assert.equal(JSON.parse(data).success, false);
                 done();
             }, currentUser._id);
             request.end();
