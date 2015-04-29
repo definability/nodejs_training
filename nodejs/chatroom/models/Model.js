@@ -7,11 +7,12 @@ var MetaModel;
 
 var Model = (function() {
     var constructor = function (schemaInfo) {
-        var database, collection, connected = false;
-        var schema = {
-            name: schemaInfo.name,
-            fields: ['_id']
-        };
+        var database, collection,
+            connected = false,
+            schema = {
+                name: schemaInfo.name,
+                fields: ['_id']
+            };
         Array.prototype.push.apply(schema.fields, schemaInfo.fields);
         Object.freeze(schema);
         this.connect = function (callback, reconnect) {
@@ -49,8 +50,8 @@ var Model = (function() {
             return schema;
         };
         this.rawCommand = function (callback) {
-            var self = this;
-            var onConnect = function (err, db) {
+            var self = this,
+                onConnect = function (err, db) {
                 if (err != null) {
                     callback(err);
                 } else {
