@@ -1,5 +1,7 @@
 var _ = require('lodash'),
-    ObjectId = require('mongodb').ObjectId;
+    assert = require('assert'),
+    ObjectId = require('mongodb').ObjectId,
+    connectMongoDB = require('../config.js').connectMongoDB;
 
 var MetaModel;
 
@@ -12,16 +14,31 @@ var Model = (function() {
         };
         Array.prototype.push.apply(schema.fields, schemaInfo.fields);
         Object.freeze(schema);
-        this.connect = function (db) {
-            if (db !== undefined) {
-                database = db;
+        this.connect = function (callback, reconnect) {
+            if (!connected || reconnect) {
+                connectMongoDB (function(err, db) {
+                    if (err != null) {
+                        callback(err);
+                    } else {
+                        database = db;
+                        collection = database.collection(schema['name']);
+                        connected = true;
+                        callback(err, db);
+                    }
+                });
+            } else {
+                callback(null, database);
             }
-            collection = database.collection(schema['name']);
-            connected = true;
         };
         this.close = function (callback) {
-            database.close(callback);
-            connected = false;
+            database.close(function(err, result) {
+                if (err != null) {
+                    callback(err);
+                } else {
+                    callback(err, result);
+                    connected = false;
+                }
+            });
         };
         this.isConnected = function() {
             return connected;
@@ -29,16 +46,33 @@ var Model = (function() {
         this.getSchema = function() {
             return schema;
         };
-        this.getCollection = function() {
-            return collection;
+        this.rawCommand = function (callback) {
+            var self = this;
+            self.connect(function (err, db) {
+                if (err != null) {
+                    callback(err);
+                } else {
+                    callback(null, collection);
+                }
+            });
         }
     };
     var proto = constructor.prototype;
     proto.get = function (parameters, callback) {
-        if (parameters === undefined) {
-            parameters = {};
-        }
-        this.getCollection().find(parameters).toArray(callback);
+        var self = this;
+        self.connect(function(err) {
+            assert.equal(err, null);
+            if (parameters === undefined) {
+                parameters = {};
+            }
+            self.rawCommand(function(err, collection) {
+                if (err != null) {
+                    callback(err);
+                } else {
+                    collection.find(parameters).toArray(callback);
+                }
+            });
+        })
     };
     proto.findById = function (id, callback) {
         var objectId;
@@ -54,23 +88,43 @@ var Model = (function() {
         return _.pick(newObject, this.getSchema().fields);
     }
     proto.post = function (objects, callback) {
-        var error = null;
-        if (!Array.isArray(objects)) {
-            error = new Error('First argument should be an array');
-        } else if (callback === undefined) {
-            error = new Error('Callback field is mandatory');
-        } else {
-            this.getCollection().insert(objects.map(this.processObject, this), callback);
-        }
-        if (error != null) {
-            callback(error);
-        }
+        var self = this;
+        self.connect(function(err) {
+            if (err != null) {
+                callback(error);
+            } else if (!Array.isArray(objects)) {
+                callback(new Error('First argument should be an array'));
+            } else if (callback === undefined) {
+                callback(new Error('Callback field is mandatory'));
+            } else {
+                self.rawCommand(function (err, collection) {
+                    if (err != null) {
+                        callback(err);
+                    } else {
+                        collection.insert(objects.map(self.processObject, self), callback);
+                    }
+                });
+            }
+        });
     };
     proto.delete = function (parameters, callback) {
+        var self = this;
         if (parameters === undefined) {
             parameters = {};
         }
-        this.getCollection().remove(parameters, callback);
+        self.connect(function(err) {
+            if (err != null) {
+                callback(err);
+            } else {
+                self.rawCommand(function (err, collection) {
+                    if (err != null) {
+                        callback(err);
+                    } else {
+                        collection.remove(parameters, callback);
+                    }
+                });
+            }
+        });
     };
     proto.deleteById = function (id, callback) {
         var objectId;
