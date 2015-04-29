@@ -15,30 +15,32 @@ var Model = (function() {
         Array.prototype.push.apply(schema.fields, schemaInfo.fields);
         Object.freeze(schema);
         this.connect = function (callback, reconnect) {
+            var onConnect = function(err, db) {
+                if (err != null) {
+                    callback(err);
+                } else {
+                    database = db;
+                    collection = database.collection(schema['name']);
+                    connected = true;
+                    callback(err, db);
+                }
+            };
             if (!connected || reconnect) {
-                connectMongoDB (function(err, db) {
-                    if (err != null) {
-                        callback(err);
-                    } else {
-                        database = db;
-                        collection = database.collection(schema['name']);
-                        connected = true;
-                        callback(err, db);
-                    }
-                });
+                connectMongoDB (onConnect);
             } else {
                 callback(null, database);
             }
         };
         this.close = function (callback) {
-            database.close(function(err, result) {
+            var onClose = function(err, result) {
                 if (err != null) {
                     callback(err);
                 } else {
                     callback(err, result);
                     connected = false;
                 }
-            });
+            };
+            database.close(onClose);
         };
         this.isConnected = function() {
             return connected;
@@ -48,31 +50,29 @@ var Model = (function() {
         };
         this.rawCommand = function (callback) {
             var self = this;
-            self.connect(function (err, db) {
+            var onConnect = function (err, db) {
                 if (err != null) {
                     callback(err);
                 } else {
                     callback(null, collection);
                 }
-            });
+            };
+            self.connect(onConnect);
         }
     };
     var proto = constructor.prototype;
     proto.get = function (parameters, callback) {
-        var self = this;
-        self.connect(function(err) {
-            assert.equal(err, null);
-            if (parameters === undefined) {
-                parameters = {};
+        if (parameters === undefined) {
+            parameters = {};
+        }
+        var command = function(err, collection) {
+            if (err != null) {
+                callback(err);
+            } else {
+                collection.find(parameters).toArray(callback);
             }
-            self.rawCommand(function(err, collection) {
-                if (err != null) {
-                    callback(err);
-                } else {
-                    collection.find(parameters).toArray(callback);
-                }
-            });
-        })
+        };
+        this.rawCommand(command);
     };
     proto.findById = function (id, callback) {
         var objectId;
@@ -88,43 +88,34 @@ var Model = (function() {
         return _.pick(newObject, this.getSchema().fields);
     }
     proto.post = function (objects, callback) {
-        var self = this;
-        self.connect(function(err) {
-            if (err != null) {
-                callback(error);
-            } else if (!Array.isArray(objects)) {
-                callback(new Error('First argument should be an array'));
-            } else if (callback === undefined) {
-                callback(new Error('Callback field is mandatory'));
-            } else {
-                self.rawCommand(function (err, collection) {
-                    if (err != null) {
-                        callback(err);
-                    } else {
-                        collection.insert(objects.map(self.processObject, self), callback);
-                    }
-                });
-            }
-        });
-    };
-    proto.delete = function (parameters, callback) {
-        var self = this;
-        if (parameters === undefined) {
-            parameters = {};
-        }
-        self.connect(function(err) {
+        var self = this,
+            command = function (err, collection) {
             if (err != null) {
                 callback(err);
             } else {
-                self.rawCommand(function (err, collection) {
-                    if (err != null) {
-                        callback(err);
-                    } else {
-                        collection.remove(parameters, callback);
-                    }
-                });
+                collection.insert(objects.map(self.processObject, self), callback);
             }
-        });
+        };
+        if (!Array.isArray(objects)) {
+            callback(new Error('First argument should be an array'));
+        } else if (callback === undefined) {
+            callback(new Error('Callback field is mandatory'));
+        } else {
+            this.rawCommand(command);
+        }
+    };
+    proto.delete = function (parameters, callback) {
+        var command = function (err, collection) {
+            if (err != null) {
+                callback(err);
+            } else {
+                collection.remove(parameters, callback);
+            }
+        };
+        if (parameters === undefined) {
+            parameters = {};
+        }
+        this.rawCommand(command);
     };
     proto.deleteById = function (id, callback) {
         var objectId;
