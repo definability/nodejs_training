@@ -5,14 +5,14 @@
  */
 
 var assert = require('assert'),
-    app = require('../app'),
+    app = require('./app.js'),
     debug = require('debug')('chatroom:server'),
     http = require('http'),
     port = normalizePort(process.env.PORT || '3000'),
     config = require('config'),
     server;
 
-var dbConnector = require('../db_connector/connector.js');
+var dbConnector = require('./db_connector/connector.js');
 dbConnector.connect(function(err, db) {
     assert.equal(err, null);
 });
