@@ -3,7 +3,7 @@ var Users;
 
 Users = new MetaModel({
     name: 'users',
-    fields: ['name', 'creationDate', 'email', 'address']
+    fields: ['name', 'createdOn', 'email', 'address']
 });
 
 module.exports = Users;

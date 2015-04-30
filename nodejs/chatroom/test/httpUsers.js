@@ -43,7 +43,7 @@ describe('HTTP server with Users', function() {
         it('should post user correctly', function (done) {
             currentUser = {
                 name: faker.name.findName(),
-                creationDate: Date.now(),
+                createdOn: Date.now(),
                 email: faker.internet.email(),
                 address: faker.address.streetAddress()
             };

@@ -21,9 +21,9 @@ describe.only('Users', function() {
             var schema = users.getSchema();
             assert.equal(schema.name, 'users');
         });
-        it('fields should contain _id, name, creationDate, email and address', function() {
+        it('fields should contain _id, name, createdOn, email and address', function() {
             var actualFields = users.getSchema()['fields'],
-                neededFields = ['_id', 'name', 'creationDate', 'email', 'address'];
+                neededFields = ['_id', 'name', 'createdOn', 'email', 'address'];
             assert.deepEqual(actualFields.sort(), neededFields.sort());
         });
     });
@@ -67,7 +67,7 @@ describe.only('Users', function() {
                 assert.deepEqual(currentUser, got[0]);
                 done();
             };
-            currentUser = {name: faker.name.findName(), creationDate: Date.now(),
+            currentUser = {name: faker.name.findName(), createdOn: Date.now(),
                 email: faker.internet.email(), address: faker.address.streetAddress()};
             users.rawCommand(function (err, collection) {
                 collection.insert([currentUser], onInsert);
@@ -93,7 +93,7 @@ describe.only('Users', function() {
                 assert.equal(deleted.result.n, 1);
                 done();
             }
-            currentUser = {name: faker.name.findName(), creationDate: Date.now(),
+            currentUser = {name: faker.name.findName(), createdOn: Date.now(),
                 email: faker.internet.email(), address: faker.address.streetAddress()};
             users.rawCommand(function (err, collection) {
                 assert.equal(err, null);
@@ -125,11 +125,11 @@ describe.only('Users', function() {
                 done();
             };
             newUsers = [
-                {name: faker.name.findName(), creationDate: Date.now(),
+                {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()},
-                {name: faker.name.findName(), creationDate: Date.now(),
+                {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()},
-                {name: faker.name.findName(), creationDate: Date.now(),
+                {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()}
             ];
             users.post(newUsers, function(err, result) {
@@ -159,11 +159,11 @@ describe.only('Users', function() {
                 return result;
             };
             newUsers = [
-                {name: faker.name.findName(), creationDate: Date.now(),
+                {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()},
-                {name: faker.name.findName(), creationDate: Date.now(),
+                {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()},
-                {name: faker.name.findName(), creationDate: Date.now(),
+                {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()}
             ];
             users.post(newUsers, onPost);
