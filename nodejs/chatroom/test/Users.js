@@ -7,7 +7,7 @@ var assert = require('assert'),
 describe.only('Users', function() {
     var users;
     before(function (done) {
-        dbConnector.connect('test', function (err, db) {
+        dbConnector.connect(function (err, db) {
             assert.equal(err, null);
             done();
         });

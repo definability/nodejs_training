@@ -1,9 +1,10 @@
-var mongoURL = require('./config.js').mongoURL,
+var dbConfig = require('config').dbConfig,
     MongoClient = require('mongodb').MongoClient;
 
-var mongoDB;
-var connectMongoDB = function (folder, callback) {
-    MongoClient.connect([mongoURL, folder].join('/'), function(err, db) {
+var mongoDB,
+    connectionAddress = [dbConfig.url, dbConfig.database].join('');
+var connectMongoDB = function (callback) {
+    MongoClient.connect(connectionAddress, function(err, db) {
         if (err != null) {
             callback(err);
             return;
