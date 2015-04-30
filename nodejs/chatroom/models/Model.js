@@ -28,9 +28,9 @@ var Model = (function() {
         var command = function(err, collection) {
             if (err != null) {
                 callback(err);
-            } else {
-                collection.find(parameters).toArray(callback);
+                return;
             }
+            collection.find(parameters).toArray(callback);
         };
         this.rawCommand(command);
     };
@@ -48,34 +48,33 @@ var Model = (function() {
         return _.pick(newObject, this.getSchema().fields);
     }
     proto.post = function (objects, callback) {
-        var self = this,
-            command = function (err, collection) {
-            if (err != null) {
-                callback(err);
-            } else {
-                collection.insert(objects.map(self.processObject, self), callback);
-            }
-        };
         if (!Array.isArray(objects)) {
             callback(new Error('First argument should be an array'));
+            return;
         } else if (callback === undefined) {
             callback(new Error('Callback field is mandatory'));
-        } else {
-            this.rawCommand(command);
+            return;
         }
-    };
-    proto.delete = function (parameters, callback) {
-        var command = function (err, collection) {
+        var self = this;
+        self.rawCommand(function (err, collection) {
             if (err != null) {
                 callback(err);
-            } else {
-                collection.remove(parameters, callback);
+                return;
             }
-        };
+            collection.insert(objects.map(self.processObject, self), callback);
+        });
+    };
+    proto.delete = function (parameters, callback) {
         if (parameters === undefined) {
             parameters = {};
         }
-        this.rawCommand(command);
+        this.rawCommand(function (err, collection) {
+            if (err != null) {
+                callback(err);
+                return;
+            }
+            collection.remove(parameters, callback);
+        });
     };
     proto.deleteById = function (id, callback) {
         var objectId;
