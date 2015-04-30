@@ -1,17 +1,22 @@
 var assert = require('assert'),
     _ = require('lodash'),
     Users = require('../models/Users.js'),
-    MongoClient = require('mongodb').MongoClient,
-    faker = require('faker'),
-    dbConfig = require('../config.js');
+    dbConnector = require('../db_connector/connector.js');
+    faker = require('faker');
 
 describe.only('Users', function() {
     var users;
-    before(function() {
-        dbConfig.changeTableName('test');
+    before(function (done) {
+        dbConnector.connect('test', function (err, db) {
+            assert.equal(err, null);
+            done();
+        });
     });
-    after(function() {
-        dbConfig.resetTableName();
+    after(function (done) {
+        dbConnector.close(function (err, db) {
+            assert.equal(err, null);
+            done();
+        });
     });
     beforeEach(function() {
         users = new Users();
@@ -34,21 +39,6 @@ describe.only('Users', function() {
             processedObject = users.processObject(newObject);
             assert.notDeepEqual(processedObject, newObject);
             assert.deepEqual(processedObject, {name: 'Peter'});
-        });
-    });
-    describe('#connect(db)', function() {
-        it('connects successfully', function(done) {
-            users.connect(done);
-        });
-    });
-    describe('#close(callback)', function() {
-        it('sucessfully closes connection', function(done) {
-            users.connect(function (db) {
-                users.close(function(err, result) {
-                    assert.equal(err, null);
-                    done();
-                });
-            });
         });
     });
     describe('#get(parameters, callback)', function() {

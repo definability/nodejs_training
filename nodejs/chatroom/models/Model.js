@@ -1,65 +1,24 @@
 var _ = require('lodash'),
     assert = require('assert'),
     ObjectId = require('mongodb').ObjectId,
-    connectMongoDB = require('../config.js').connectMongoDB;
+    getDBCollection = require('../db_connector/connector.js').getCollection;
 
 var MetaModel;
 
 var Model = (function() {
     var constructor = function (schemaInfo) {
-        var database, collection,
-            connected = false,
-            schema = {
+        var schema = {
                 name: schemaInfo.name,
                 fields: ['_id']
             };
         Array.prototype.push.apply(schema.fields, schemaInfo.fields);
         Object.freeze(schema);
-        this.connect = function (callback, reconnect) {
-            var onConnect = function(err, db) {
-                if (err != null) {
-                    callback(err);
-                } else {
-                    database = db;
-                    collection = database.collection(schema['name']);
-                    connected = true;
-                    callback(err, db);
-                }
-            };
-            if (!connected || reconnect) {
-                connectMongoDB (onConnect);
-            } else {
-                callback(null, database);
-            }
-        };
-        this.close = function (callback) {
-            var onClose = function(err, result) {
-                if (err != null) {
-                    callback(err);
-                } else {
-                    callback(err, result);
-                    connected = false;
-                }
-            };
-            database.close(onClose);
-        };
-        this.isConnected = function() {
-            return connected;
-        };
         this.getSchema = function() {
             return schema;
         };
         this.rawCommand = function (callback) {
-            var self = this,
-                onConnect = function (err, db) {
-                if (err != null) {
-                    callback(err);
-                } else {
-                    callback(null, collection);
-                }
-            };
-            self.connect(onConnect);
-        }
+            callback(null, getDBCollection(schema['name']));
+        };
     };
     var proto = constructor.prototype;
     proto.get = function (parameters, callback) {
