@@ -4,7 +4,7 @@ var assert = require('assert'),
     dbConnector = require('../db_connector/connector.js');
     faker = require('faker');
 
-describe.only('Users', function() {
+describe('Users', function() {
     var users;
     before(function (done) {
         dbConnector.connect(function (err, db) {

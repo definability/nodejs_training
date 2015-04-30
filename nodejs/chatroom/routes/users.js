@@ -6,16 +6,17 @@ var express = require('express'),
     httpStatus = require('http-status'),
     MongoClient = require('mongodb').MongoClient,
     ObjectId = require('mongodb').ObjectId,
-    Users = require('../models/Users.js'),
-    debug = require('debug')('users');
+    UsersModel = require('../models/Users.js'),
+    debug = require('debug')('Users');
 
 var sendError = function (response, statusCode) {
     response.status(statusCode).json({success: false, error: httpStatus[statusCode]});
 };
 
+var Users = new UsersModel();
+
 router.get('/', function(request, response, next) {
-    var users = new Users();
-    users.get({}, function (err, got) {
+    Users.get({}, function (err, got) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
@@ -26,8 +27,7 @@ router.get('/', function(request, response, next) {
 });
 
 router.get('/:id', function(request, response, next) {
-    var users = new Users();
-    users.findById(request.params.id, function (err, got) {
+    Users.findById(request.params.id, function (err, got) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
@@ -41,12 +41,11 @@ router.get('/:id', function(request, response, next) {
 });
 
 router.post('/', function(request, response, next) {
-    var users = new Users();
     if (Object.keys(request.body).length == 0) {
         sendError(response, httpStatus.BAD_REQUEST);
         return;
     }
-    users.post([request.body], function (err, result) {
+    Users.post([request.body], function (err, result) {
         assert.equal(err, null);
         response.json({success: result.result.ok == 1, response: {users: result.ops}});
     });
@@ -57,8 +56,7 @@ router.delete('/', function(request, response, next) {
 });
 
 router.delete('/:id', function(request, response, next) {
-    var users = new Users();
-    users.deleteById(request.params.id, function (err, deleted) {
+    Users.deleteById(request.params.id, function (err, deleted) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);

@@ -1,0 +1,11 @@
+{
+  "name": "MetaSingleton",
+  "version": "0.0.0",
+  "private": true,
+  "main": "MetaSingleton.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+  }
+}

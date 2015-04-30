@@ -91,8 +91,13 @@ var Model = (function() {
 
 MetaModel = (function() {
     var constructor = function (schemaInfo) {
-        return function() {
+        var ModelSingleton = new MetaSingleton(function() {
+            // This singleton calls constructor with parameters
             return new Model(schemaInfo);
+        });
+        var concreteModelSingleton = new ModelSingleton();
+        return function() {
+            return concreteModelSingleton;
         };
     };
     return constructor;
