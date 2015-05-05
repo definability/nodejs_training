@@ -1,5 +1,4 @@
 var Singleton = (function() {
-    var instances = [];
     /**
      * Returns singleton instance. Creates it on first function call.
      * WARNING: new instance will be created by default constructor,
@@ -7,18 +6,13 @@ var Singleton = (function() {
      * for example, if the class has static counter of instances.
      */
     var constructor = function (RegularClass, reset) {
-        if (reset === undefined) {
-            reset = false;
+        if (RegularClass.__singleton_instance__ === undefined || reset) {
+            RegularClass.__singleton_instance__ = new RegularClass();
         }
-        if (RegularClass.hasOwnProperty('__singletonId') && !reset) {
-            return instances[RegularClass.__singletonId];
-        }
-        RegularClass.__singletonId = instances.length;
-        var instance = new RegularClass();
+        var instance = RegularClass.__singleton_instance__;
         instance.__constProperties = Object.freeze({
             isSingleton: true,
         });
-        instances.push(instance);
         return instance;
     }
     return constructor;
