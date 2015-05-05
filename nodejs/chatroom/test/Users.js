@@ -29,10 +29,10 @@ describe('Users', function() {
         it('fields should contain _id, name, createdOn, email and address', function() {
             var actualFields = users.getSchema()['fields'],
                 neededFields = ['_id', 'name', 'createdOn', 'email', 'address'];
-            assert.deepEqual(actualFields.sort(), neededFields.sort());
+            assert.deepEqual(_.pluck(actualFields, 'name').sort(), neededFields.sort());
         });
     });
-    describe('#processObject(newObject)', function() {
+    describe('#processObject(object)', function() {
         it('returns only schema fields', function() {
             var newObject, processObject;
             newObject = {name: 'Peter', unknownField: 'Unknown value'};
@@ -41,6 +41,14 @@ describe('Users', function() {
             assert.deepEqual(processedObject, {name: 'Peter'});
         });
     });
+    describe('#validateObject(object)', function() {
+        it('validates proper fields successfully', function() {
+            var newObject, processObject;
+            newObject = {name: 'Peter', 'createdOn': Date.now(), email: 'example@host.com', address: 'Address'};
+            validationResult = users.validate(newObject);
+        });
+    });
+
     describe('#get(parameters, callback)', function() {
         it('gets list of users successfully', function(done) {
             users.get({}, done);

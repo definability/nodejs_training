@@ -1,11 +1,22 @@
-var MetaModel = require('./Model.js').MetaModel;
-    //MetaSingleton = require('../singleton/MetaSingleton.js').MetaSingleton;
-    MetaSingleton = require('MetaSingleton');
+var MetaModel = require('./Model.js'),
+    defaultValidators = require('./Validator.js').defaultValidators;
 var Users;
 
 Users = new MetaModel({
     name: 'users',
-    fields: ['name', 'createdOn', 'email', 'address']
+    fields: [{
+        name: 'name',
+        validators: [defaultValidators.mandatory]
+    }, {
+        name: 'createdOn',
+        validators: []
+    }, {
+        name: 'email',
+        validators: []
+    }, {
+        name: 'address',
+        validators: []
+    }]
 });
 
 module.exports = Users;
