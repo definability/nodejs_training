@@ -7,7 +7,8 @@ var _ = require('lodash'),
 var MetaModel;
 
 var Model = (function() {
-    var constructor = function (schemaInfo) {
+    var instance = null;
+    var constructor = function (schemaInfo, methods) {
         var schema = {
                 name: schemaInfo.name,
                 fields: [{name: '_id', validators: []}]
@@ -20,6 +21,11 @@ var Model = (function() {
         this.rawCommand = function (callback) {
             callback(null, getDBCollection(schema['name']));
         };
+        if (methods !== undefined) {
+            for (var m in methods) {
+                this[m] = methods[m].bind(this);
+            }
+        }
     };
     var proto = constructor.prototype;
     proto.get = function (parameters, callback) {
@@ -112,14 +118,26 @@ var Model = (function() {
         }
         this.delete({_id: objectId}, callback);
     };
+    proto.put = function (parameters, values, callback) {
+        if (parameters === undefined) {
+            parameters = {};
+        }
+        this.rawCommand(function (err, collection) {
+            if (err != null) {
+                callback(err);
+                return;
+            }
+            collection.update(parameters, {$set: values}, {w: 1}, callback);
+        });
+    };
     return constructor;
 })();
 
 MetaModel = (function() {
-    var constructor = function (schemaInfo) {
+    var constructor = function (schemaInfo, methods) {
         var ModelSingleton = new MetaSingleton(function() {
             // This singleton calls constructor with parameters
-            return new Model(schemaInfo);
+            return new Model(schemaInfo, methods);
         });
         var concreteModelSingleton = new ModelSingleton();
         return function() {

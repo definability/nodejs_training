@@ -148,11 +148,11 @@ describe('Users', function() {
             };
             checkUser = function (user) {
                 var result = function (callback) {
-                        users.get(user, function(err, documents) {
+                    users.get(user, function(err, documents) {
                         assert.equal(err, null);
                         assert.equal(documents.length, 1);
                         callback();
-                    });
+                    });    
                 };
                 return result;
             };
