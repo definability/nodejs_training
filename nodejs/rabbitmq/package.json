@@ -1,0 +1,12 @@
+{
+  "name": "rabbitmq",
+  "version": "0.0.0",
+  "description": "Basic RabbitMQ example",
+  "scripts": {
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "amqplib": "~0.3.2",
+  }
+}
