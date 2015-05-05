@@ -1,7 +1,8 @@
 var _ = require('lodash'),
     assert = require('assert'),
     ObjectId = require('mongodb').ObjectId,
-    getDBCollection = require('../db_connector/connector.js').getCollection;
+    getDBCollection = require('../db_connector/connector.js').getCollection,
+    MetaSingleton = require('MetaSingleton');
 
 var MetaModel;
 
@@ -9,7 +10,7 @@ var Model = (function() {
     var constructor = function (schemaInfo) {
         var schema = {
                 name: schemaInfo.name,
-                fields: ['_id']
+                fields: [{name: '_id', validators: []}]
             };
         Array.prototype.push.apply(schema.fields, schemaInfo.fields);
         Object.freeze(schema);
@@ -44,9 +45,22 @@ var Model = (function() {
         }
         this.get({_id: objectId}, callback);
     };
-    proto.processObject = function (newObject) {
-        return _.pick(newObject, this.getSchema().fields);
+    proto.processObject = function (object) {
+        return _.pick(object, _.pluck(this.getSchema()['fields'], 'name'));
     }
+    proto.validate = function (object) {
+        var result = {};
+        for (var key in this.getSchema()['fields']) {
+            var field = this.getSchema()['fields'][key];
+            var name = field['name'];
+            var validators = field['validators'];
+            var value = object[key];
+            result[name] = validators.reduce(function (result, currentValidator) {
+                return result & currentValidator.validate(value);
+            }, true);
+        }
+        return result;
+    };
     proto.post = function (objects, callback) {
         if (!Array.isArray(objects)) {
             callback(new Error('First argument should be an array'));
@@ -61,7 +75,19 @@ var Model = (function() {
                 callback(err);
                 return;
             }
-            collection.insert(objects.map(self.processObject, self), callback);
+            objects = objects.map(self.processObject, self);
+            var errors = objects.reduce(function (result, currentObject) {
+                var validationResult = self.validate(currentObject);
+                if (_.invert(validationResult, true)[false] !== undefined) {
+                    result.push({object: currentObject, validation: validationResult});
+                }
+                return result;
+            }, []);
+            if (errors.length > 0) {
+                callback(new Error(['Validation errors occured:', errors].join(' ')));
+                return;
+            }
+            collection.insert(objects, callback);
         });
     };
     proto.delete = function (parameters, callback) {
@@ -103,4 +129,4 @@ MetaModel = (function() {
     return constructor;
 })();
 
-module.exports = {MetaModel: MetaModel};
+module.exports = MetaModel;
