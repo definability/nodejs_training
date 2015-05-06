@@ -136,6 +136,274 @@ describe('MetaModel', function() {
             assert.notDeepEqual(testInstance.validate({}), {});
             assert.notDeepEqual(testInstance.validate({second: 'value'}), {});
         });
-
+    });
+    describe('#rawCommand(callback)', function() {
+        var Test;
+        before(function() {
+            var schema = {
+                name: 'test',
+                fields: [{
+                    name: 'first',
+                    validators: [defaultValidators.mandatory]
+                }]
+            };
+            var TestModel = new MetaModel(schema);
+            Test = new TestModel();
+        });
+        it('calls callback', function (done) {
+            Test.rawCommand(function (err, collection) {
+                done();
+            });
+        });
+        it('gets collection without errors', function (done) {
+            Test.rawCommand(function (err, collection) {
+                assert.equal(err, null);
+                done();
+            });
+        });
+        describe('-find', function() {
+            it('works without errors', function (done) {
+                var command, onExecuted;
+                onExecuted = function (err, result) {
+                    assert.equal(err, null);
+                    done();
+                };
+                command = function (err, collection) {
+                    assert.equal(err, null);
+                    collection.find({}, onExecuted);
+                };
+                Test.rawCommand(command);
+            });
+        });
+        describe('-insert', function() {
+            it('works without errors', function (done) {
+                var command, onExecuted;
+                onExecuted = function (err, result) {
+                    assert.equal(err, null);
+                    done();
+                };
+                command = function (err, collection) {
+                    assert.equal(err, null);
+                    collection.insert([{key: 'value'}], onExecuted);
+                };
+                Test.rawCommand(command);
+            });
+            it('inserts document properly', function (done) {
+                var command, onExecuted;
+                onExecuted = function (err, results) {
+                    assert.equal(err, null);
+                    assert.equal(results.length, 1);
+                    assert.equal(results[0].key, 'value');
+                    done();
+                };
+                command = function (err, collection) {
+                    assert.equal(err, null);
+                    collection.find({}).toArray(onExecuted);
+                };
+                Test.rawCommand(command);
+            });
+        });
+        describe('-update', function() {
+            it('works without errors', function (done) {
+                var command, onExecuted;
+                onExecuted = function (err, result) {
+                    assert.equal(err, null);
+                    done();
+                };
+                command = function (err, collection) {
+                    assert.equal(err, null);
+                    collection.update({key: 'value'}, {$set: {key: 'new value'}}, {w: 1}, onExecuted);
+                };
+                Test.rawCommand(command);
+            });
+            it('updates document properly', function (done) {
+                var command, onExecuted;
+                onExecuted = function (err, results) {
+                    assert.equal(err, null);
+                    assert.equal(results.length, 1);
+                    assert.equal(results[0].key, 'new value');
+                    done();
+                };
+                command = function (err, collection) {
+                    assert.equal(err, null);
+                    collection.find({}).toArray(onExecuted);
+                };
+                Test.rawCommand(command);
+            });
+        });
+        describe('-remove', function() {
+            it('works without errors', function (done) {
+                var command, onExecuted;
+                onExecuted = function (err, result) {
+                    assert.equal(err, null);
+                    assert.equal(result.result.ok, 1);
+                    assert.equal(result.result.n, 1);
+                    done();
+                };
+                command = function (err, collection) {
+                    assert.equal(err, null);
+                    collection.remove({}, onExecuted);
+                };
+                Test.rawCommand(command);
+            });
+            it('removes documents', function (done) {
+                var command, onExecuted;
+                onExecuted = function (err, results) {
+                    assert.equal(err, null);
+                    assert.equal(results.length, 0);
+                    done();
+                };
+                command = function (err, collection) {
+                    assert.equal(err, null);
+                    collection.find({}).toArray(onExecuted);
+                };
+                Test.rawCommand(command);
+            });
+        });
+    });
+    describe('#find(parameters, callback)', function() {
+        var Test;
+        before(function() {
+            var schema = {
+                name: 'test',
+                fields: [{
+                    name: 'first',
+                    validators: [defaultValidators.mandatory]
+                }]
+            };
+            var TestModel = new MetaModel(schema);
+            Test = new TestModel();
+        });
+        it('works without errors', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.equal(err, null);
+                done();
+            };
+            Test.find({}, onExecuted);
+        });
+    });
+    describe('#insert(parameters, callback)', function() {
+        var Test;
+        before(function() {
+            var schema = {
+                name: 'test',
+                fields: [{
+                    name: 'first',
+                    validators: [defaultValidators.mandatory]
+                }]
+            };
+            var TestModel = new MetaModel(schema);
+            Test = new TestModel();
+        });
+        it('inserts nothing on blank array', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.equal(err, null);
+                assert.equal(result.result.ok, 1);
+                assert.equal(result.result.n, 0);
+                done();
+            };
+            Test.insert([], onExecuted);
+        });
+        it('works without errors on valid object', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.equal(err, null);
+                done();
+            };
+            Test.insert({first: 'value'}, onExecuted);
+        });
+        it('works without errors on valid array', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.equal(err, null);
+                done();
+            };
+            Test.insert([{first: 'next value'}], onExecuted);
+        });
+        it('throws error if validation failed', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.notEqual(err, null);
+                done();
+            };
+            Test.insert([{key: 'value'}], onExecuted);
+        });
+        it('inserts documents properly', function (done) {
+            var onExecuted;
+            onExecuted = function (err, results) {
+                assert.equal(err, null);
+                assert.equal(results.length, 2);
+                assert.equal(results[0].first, 'value');
+                done();
+            };
+            Test.find({}, onExecuted);
+        });
+    });
+    describe('#update(parameters, callback)', function() {
+        var Test;
+        before(function() {
+            var schema = {
+                name: 'test',
+                fields: [{
+                    name: 'first',
+                    validators: [defaultValidators.mandatory]
+                }]
+            };
+            var TestModel = new MetaModel(schema);
+            Test = new TestModel();
+        });
+        it('works without errors', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.equal(err, null);
+                done();
+            };
+            Test.update({first: 'value'}, {first: 'new value'}, onExecuted);
+        });
+        it('updates document properly', function (done) {
+            var onExecuted;
+            onExecuted = function (err, results) {
+                assert.equal(err, null);
+                assert.equal(results.length, 1);
+                assert.equal(results[0].first, 'new value');
+                done();
+            };
+            Test.get({first: 'new value'}, onExecuted);
+        });
+    });
+    describe('#remove(parameters, callback)', function() {
+        var Test;
+        before(function() {
+            var schema = {
+                name: 'test',
+                fields: [{
+                    name: 'first',
+                    validators: [defaultValidators.mandatory]
+                }]
+            };
+            var TestModel = new MetaModel(schema);
+            Test = new TestModel();
+        });
+        it('works without errors', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.equal(err, null);
+                assert.equal(result.result.ok, 1);
+                assert.equal(result.result.n, 2);
+                done();
+            };
+            Test.remove({}, onExecuted);
+        });
+        it('removes documents', function (done) {
+            var onExecuted;
+            onExecuted = function (err, results) {
+                assert.equal(err, null);
+                assert.equal(results.length, 0);
+                done();
+            };
+            Test.get({}, onExecuted);
+        });
     });
 });

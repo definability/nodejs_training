@@ -90,12 +90,12 @@ var Model = (function() {
         return validationResults;
     };
     proto.post = function (objects, callback) {
-        if (!Array.isArray(objects)) {
-            callback(new Error('First argument should be an array'));
-            return;
-        } else if (callback === undefined) {
+        if (callback === undefined) {
             callback(new Error('Callback field is mandatory'));
             return;
+        }
+        if (!Array.isArray(objects)) {
+            objects = [objects];
         }
         var self = this;
         self.rawCommand(function (err, collection) {
@@ -146,6 +146,10 @@ var Model = (function() {
             collection.update(parameters, {$set: values}, {w: 1}, callback);
         });
     };
+    proto.find = proto.get;
+    proto.insert = proto.post;
+    proto.update = proto.put;
+    proto.remove = proto.delete;
     return constructor;
 })();
 
