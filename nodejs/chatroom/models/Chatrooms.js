@@ -1,4 +1,4 @@
-var MetaModel = require('./Model.js'),
+var MetaModel = require('./MetaModel.js'),
     defaultValidators = require('./Validator.js').defaultValidators;
 var Chatrooms;
 

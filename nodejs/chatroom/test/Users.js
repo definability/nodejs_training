@@ -21,6 +21,7 @@ describe('Users', function() {
     beforeEach(function() {
         users = new Users();
     });
+    /*
     describe('#getSchema()', function() {
         it('name should be `users\'', function() {
             var schema = users.getSchema();
@@ -48,7 +49,7 @@ describe('Users', function() {
             validationResult = users.validate(newObject);
         });
     });
-
+    */
     describe('#get(parameters, callback)', function() {
         it('gets list of users successfully', function(done) {
             users.get({}, done);

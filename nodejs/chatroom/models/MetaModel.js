@@ -13,6 +13,13 @@ var Model = (function() {
                 name: schemaInfo.name,
                 fields: [{name: '_id', validators: []}]
             };
+        if (schemaInfo.fields === undefined) {
+            throw new Error('`fields\' in schema is a mandatory field');
+        } else if (!Array.isArray(schemaInfo.fields)) {
+            throw new Error('`fields\' in schema should be array');
+        } else if (schemaInfo.name === undefined) {
+            throw new Error('`name\' in schema is a mandatory field');
+        }
         Array.prototype.push.apply(schema.fields, schemaInfo.fields);
         Object.freeze(schema);
         this.getSchema = function() {
@@ -51,21 +58,36 @@ var Model = (function() {
         }
         this.get({_id: objectId}, callback);
     };
-    proto.processObject = function (object) {
+    proto.getObjectFields = function (object) {
         return _.pick(object, _.pluck(this.getSchema()['fields'], 'name'));
     }
-    proto.validate = function (object) {
-        var result = {};
+    proto.validate = function (objects) {
+        var self = this;
+        if (Array.isArray(objects)) {
+            var result = [];
+            for (var i in objects) {
+                var v = this.validate(objects[i]);
+                if (Object.keys(v).length > 0) {
+                    result.push(v);
+                }
+            }
+            return result;
+        }
+        var validationResults = {};
         for (var key in this.getSchema()['fields']) {
             var field = this.getSchema()['fields'][key];
             var name = field['name'];
             var validators = field['validators'];
-            var value = object[key];
-            result[name] = validators.reduce(function (result, currentValidator) {
-                return result & currentValidator.validate(value);
+            var value = objects[name];
+
+            var currentFieldValidation = validators.reduce(function (result, currentValidator) {
+                return result && currentValidator.validate(value);
             }, true);
+            if (currentFieldValidation !== true) {
+                validationResults[name] = currentFieldValidation;
+            }
         }
-        return result;
+        return validationResults;
     };
     proto.post = function (objects, callback) {
         if (!Array.isArray(objects)) {
@@ -81,14 +103,8 @@ var Model = (function() {
                 callback(err);
                 return;
             }
-            objects = objects.map(self.processObject, self);
-            var errors = objects.reduce(function (result, currentObject) {
-                var validationResult = self.validate(currentObject);
-                if (_.invert(validationResult, true)[false] !== undefined) {
-                    result.push({object: currentObject, validation: validationResult});
-                }
-                return result;
-            }, []);
+            objects = objects.map(self.getObjectFields, self);
+            var errors = self.validate(objects);
             if (errors.length > 0) {
                 callback(new Error(['Validation errors occured:', errors].join(' ')));
                 return;
