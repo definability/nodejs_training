@@ -16,7 +16,7 @@ var Model = (function() {
         if (schemaInfo.fields === undefined) {
             throw new Error('`fields\' in schema is a mandatory field');
         } else if (!Array.isArray(schemaInfo.fields)) {
-            throw new Error('`fields\' in schema should be array');
+            throw new Error('`fields\' in schema should be an array');
         } else if (schemaInfo.name === undefined) {
             throw new Error('`name\' in schema is a mandatory field');
         }
@@ -36,7 +36,8 @@ var Model = (function() {
     };
     var proto = constructor.prototype;
     proto.find = function (parameters, callback) {
-        if (parameters === undefined) {
+        if (_.isFunction(parameters)) {
+            callback = parameters;
             parameters = {};
         }
         var command = function(err, collection) {

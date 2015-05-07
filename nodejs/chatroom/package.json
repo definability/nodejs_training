@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "index.js",
-    "test": "NODE_ENV=test mocha"
+    "test": "NODE_ENV=test istanbul cover _mocha -- -R spec"
   },
   "dependencies": {
     "body-parser": "~1.12.0",
