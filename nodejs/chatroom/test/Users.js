@@ -21,7 +21,7 @@ describe('Users', function() {
     beforeEach(function() {
         users = new Users();
     });
-    describe('#post(objects, callback)', function() {
+    describe('#insert(objects, callback)', function() {
         beforeEach(function(done) {
             users.remove({}, function(err, result) {
                 assert.equal(err, null);

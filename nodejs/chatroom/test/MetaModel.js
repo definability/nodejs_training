@@ -42,6 +42,24 @@ describe('MetaModel', function() {
         it('creates test model with proper schema successfully', function() {
             assert.doesNotThrow(function() { new MetaModel(schema) });
         });
+        it('extends model successfully', function(done) {
+            var TestModel = new MetaModel(schema, {
+                testMethod: function() {
+                    done();
+                }
+            });
+            var testInstance = new TestModel();
+            testInstance.testMethod();
+        });
+        it('context in new model methods is correct', function() {
+            var TestModel = new MetaModel(schema, {
+                testMethod: function() {
+                    return this;
+                }
+            });
+            var testInstance = new TestModel();
+            assert.strictEqual(testInstance.testMethod(), testInstance);
+        });
         it('model is a singleton', function() {
             var TestModel = new MetaModel(schema);
             var test1 = new TestModel();

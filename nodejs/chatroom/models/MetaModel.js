@@ -46,7 +46,7 @@ var Model = (function() {
             }
             collection.find(parameters).toArray(callback);
         };
-        this.rawCommand(command);
+        this.rawCommand(command.bind(this));
     };
     proto.findById = function (id, callback) {
         var objectId;
@@ -62,32 +62,22 @@ var Model = (function() {
         return _.pick(object, _.pluck(this.getSchema()['fields'], 'name'));
     }
     proto.validate = function (objects) {
-        var self = this;
         if (Array.isArray(objects)) {
-            var result = [];
-            for (var i in objects) {
-                var v = this.validate(objects[i]);
-                if (Object.keys(v).length > 0) {
-                    result.push(v);
-                }
+            var isInvalid = function (validationResult) {
+                return Object.keys(validationResult).length > 0;
+            };
+            return objects.map(this.validate, this).filter(isInvalid);
+        }
+        var validateField = function (result, field) {
+            var valid = field.validators.reduce(function (result, currentValidator) {
+                return result && currentValidator.validate(objects[field.name]);
+            }, true);
+            if (!valid) {
+                result[field.name] = valid;
             }
             return result;
-        }
-        var validationResults = {};
-        for (var key in this.getSchema()['fields']) {
-            var field = this.getSchema()['fields'][key];
-            var name = field['name'];
-            var validators = field['validators'];
-            var value = objects[name];
-
-            var currentFieldValidation = validators.reduce(function (result, currentValidator) {
-                return result && currentValidator.validate(value);
-            }, true);
-            if (currentFieldValidation !== true) {
-                validationResults[name] = currentFieldValidation;
-            }
-        }
-        return validationResults;
+        };
+        return this.getSchema()['fields'].reduce(validateField, {});
     };
     proto.insert = function (objects, callback) {
         if (callback === undefined) {
@@ -97,32 +87,32 @@ var Model = (function() {
         if (!Array.isArray(objects)) {
             objects = [objects];
         }
-        var self = this;
-        self.rawCommand(function (err, collection) {
+        var command = function (err, collection) {
             if (err != null) {
                 callback(err);
                 return;
             }
-            objects = objects.map(self.getObjectFields, self);
-            var errors = self.validate(objects);
+            var errors = this.validate(objects.map(this.getObjectFields, this));
             if (errors.length > 0) {
                 callback(new Error(['Validation errors occured:', errors].join(' ')));
                 return;
             }
             collection.insert(objects, callback);
-        });
+        }
+        this.rawCommand(command.bind(this));
     };
     proto.remove = function (parameters, callback) {
         if (parameters === undefined) {
             parameters = {};
         }
-        this.rawCommand(function (err, collection) {
+        var command = function (err, collection) {
             if (err != null) {
                 callback(err);
                 return;
             }
             collection.remove(parameters, callback);
-        });
+        };
+        this.rawCommand(command.bind(this));
     };
     proto.removeById = function (id, callback) {
         var objectId;
