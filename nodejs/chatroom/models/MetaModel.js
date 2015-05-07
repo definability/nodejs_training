@@ -40,6 +40,9 @@ var Model = (function() {
             callback = parameters;
             parameters = {};
         }
+        if (callback === undefined) {
+            throw new Error('callback is mandatory');
+        }
         var command = function(err, collection) {
             if (err != null) {
                 callback(err);
@@ -82,8 +85,7 @@ var Model = (function() {
     };
     proto.insert = function (objects, callback) {
         if (callback === undefined) {
-            callback(new Error('Callback field is mandatory'));
-            return;
+            throw Error('Callback field is mandatory');
         }
         if (!Array.isArray(objects)) {
             objects = [objects];
@@ -103,8 +105,8 @@ var Model = (function() {
         this.rawCommand(command.bind(this));
     };
     proto.remove = function (parameters, callback) {
-        if (parameters === undefined) {
-            parameters = {};
+        if (callback === undefined) {
+            throw new Error('callback is mandatory');
         }
         var command = function (err, collection) {
             if (err != null) {
@@ -126,9 +128,6 @@ var Model = (function() {
         this.remove({_id: objectId}, callback);
     };
     proto.rawUpdate = function (parameters, query, callback) {
-        if (parameters === undefined) {
-            parameters = {};
-        }
         this.rawCommand(function (err, collection) {
             if (err != null) {
                 callback(err);

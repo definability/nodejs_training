@@ -287,6 +287,9 @@ describe('MetaModel', function() {
             });
         });
         describe('#find(parameters, callback)', function() {
+            it('doesn\'t work without callback', function() {
+                assert.throws(function() { Test.find(null); });
+            });
             it('works without errors', function (done) {
                 var onExecuted;
                 onExecuted = function (err, result) {
@@ -337,6 +340,9 @@ describe('MetaModel', function() {
             });
         });
         describe('#findById(id, callback)', function() {
+            it('doesn\'t work without callback', function() {
+                assert.throws(function() { Test.findById(null); });
+            });
             it('throws an error if id is not valid', function (done) {
                 var onExecuted;
                 onExecuted = function (err, result) {
@@ -380,6 +386,9 @@ describe('MetaModel', function() {
             });
         });
         describe('#insert(parameters, callback)', function() {
+            it('doesn\'t work without callback', function() {
+                assert.throws(function() { Test.insert(null); });
+            });
             it('inserts nothing on blank array', function (done) {
                 var onExecuted;
                 onExecuted = function (err, result) {
@@ -426,6 +435,9 @@ describe('MetaModel', function() {
             });
         });
         describe('#rawUpdate(parameters, query, callback)', function() {
+            it('doesn\'t work without callback', function() {
+                assert.throws(function() { Test.rawUpdate(null); });
+            });
             it('works without errors', function (done) {
                 var onExecuted;
                 onExecuted = function (err, result) {
@@ -446,6 +458,9 @@ describe('MetaModel', function() {
             });
         });
         describe('#update(parameters, values, callback)', function() {
+            it('doesn\'t work without callback', function() {
+                assert.throws(function() { Test.update(null); });
+            });
             it('works without errors', function (done) {
                 var onExecuted;
                 onExecuted = function (err, result) {
@@ -466,6 +481,9 @@ describe('MetaModel', function() {
             });
         });
         describe('#remove(parameters, callback)', function() {
+            it('doesn\'t work without callback', function() {
+                assert.throws(function() { Test.remove(null); });
+            });
             it('works without errors', function (done) {
                 var onExecuted;
                 onExecuted = function (err, result) {
@@ -484,6 +502,18 @@ describe('MetaModel', function() {
                     done();
                 };
                 Test.find(onExecuted);
+            });
+        });
+        describe('#removeById(parameters, callback)', function() {
+            it('doesn\'t work without callback', function() {
+                assert.throws(function() { Test.removeById(null); });
+            });
+            it('cannot remove object by incorrect id', function (done) {
+                var callback = function (err, result) {
+                    assert.notEqual(err, null);
+                    done();
+                };
+                Test.removeById({_id: '1'}, callback);
             });
         });
     });

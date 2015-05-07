@@ -1,5 +1,7 @@
 var MetaModel = require('./MetaModel.js'),
-    defaultValidators = require('./Validator.js').defaultValidators;
+    defaultValidators = require('./Validator.js').defaultValidators,
+    ObjectId = require('mongodb').ObjectId,
+    _ = require('lodash');
 var Chatrooms;
 
 Chatrooms = (function() {
@@ -10,7 +12,7 @@ Chatrooms = (function() {
             validators: [defaultValidators.mandatory]
         }, {
             name: 'users',
-            validators: []
+            validators: [defaultValidators.mandatory, defaultValidators.arrayNotLessThan(2)]
         }]
     }, {
         getUsers: function (id, callback) {
@@ -23,8 +25,34 @@ Chatrooms = (function() {
             };
             this.findById(id, onFound);
         },
-        addUsers: function (id, newUsers, callback) {
-            this.rawUpdate({_id: id}, {$push: {users: {$each: newUsers}}}, callback);
+        addUsers: function (id, users, callback) {
+            var query;
+            if (_.isArray(users)) {
+                query = {$addToSet: {users: {$each: users}}};
+            } else if (_.isObject(users)) {
+                query = {$addToSet: {users: users}};
+            } else {
+                callback(new Error(['Invalid type of users:', typeof(users)].join(' ')));
+                return;
+            }
+            this.rawUpdate({_id: id}, query, callback);
+        },
+        removeUsers: function (id, users, callback) {
+            var ids = _.indexBy(users, '_id');
+            var onUsersFound = function (cb) {
+                var willRemove, willNotRemove;
+                willNotRemove = function (user) {
+                    return ids[ObjectId(user['_id'])] === undefined;
+                };
+                return (function (err, result) {
+                    var usersLeft = result.filter(willNotRemove);
+                    if (usersLeft.length < 2) {
+                        cb(new Error('There should be at lest two users left'));
+                    }
+                    this.update({_id: id}, {users: usersLeft}, cb);
+                }).bind(this);;
+            };
+            _.flowRight(_.wrap(id, this.getUsers).bind(this), onUsersFound.bind(this))(callback);
         }
     });
     return constructor;
