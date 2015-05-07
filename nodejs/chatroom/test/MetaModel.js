@@ -359,7 +359,7 @@ describe('MetaModel', function() {
             Test.find({}, onExecuted);
         });
     });
-    describe('#update(parameters, callback)', function() {
+    describe('#rawUpdate(parameters, query, callback)', function() {
         var Test;
         before(function() {
             var schema = {
@@ -378,7 +378,39 @@ describe('MetaModel', function() {
                 assert.equal(err, null);
                 done();
             };
-            Test.update({first: 'value'}, {first: 'new value'}, onExecuted);
+            Test.rawUpdate({first: 'value'}, {$set: {first: 'pretty value'}}, onExecuted);
+        });
+        it('updates document properly', function (done) {
+            var onExecuted;
+            onExecuted = function (err, results) {
+                assert.equal(err, null);
+                assert.equal(results.length, 1);
+                assert.equal(results[0].first, 'pretty value');
+                done();
+            };
+            Test.find({first: 'pretty value'}, onExecuted);
+        });
+    });
+    describe('#update(parameters, values, callback)', function() {
+        var Test;
+        before(function() {
+            var schema = {
+                name: 'test',
+                fields: [{
+                    name: 'first',
+                    validators: [defaultValidators.mandatory]
+                }]
+            };
+            var TestModel = new MetaModel(schema);
+            Test = new TestModel();
+        });
+        it('works without errors', function (done) {
+            var onExecuted;
+            onExecuted = function (err, result) {
+                assert.equal(err, null);
+                done();
+            };
+            Test.update({first: 'pretty value'}, {first: 'new value'}, onExecuted);
         });
         it('updates document properly', function (done) {
             var onExecuted;

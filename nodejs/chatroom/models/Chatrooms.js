@@ -24,15 +24,7 @@ Chatrooms = (function() {
             this.findById(id, onFound);
         },
         addUsers: function (id, newUsers, callback) {
-            var onGot = function (err, users) {
-                if (err != null) {
-                    callback(err);
-                    return;
-                }
-                Array.prototype.push.apply(users, newUsers);
-                this.update({_id: id}, {users: users}, callback);
-            };
-            this.getUsers(id, onGot.bind(this));
+            this.rawUpdate({_id: id}, {$push: {users: {$each: newUsers}}}, callback);
         }
     });
     return constructor;

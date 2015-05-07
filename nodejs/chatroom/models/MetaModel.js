@@ -124,7 +124,7 @@ var Model = (function() {
         }
         this.remove({_id: objectId}, callback);
     };
-    proto.update = function (parameters, values, callback) {
+    proto.rawUpdate = function (parameters, query, callback) {
         if (parameters === undefined) {
             parameters = {};
         }
@@ -133,8 +133,11 @@ var Model = (function() {
                 callback(err);
                 return;
             }
-            collection.update(parameters, {$set: values}, {w: 1}, callback);
+            collection.update(parameters, query, {w: 1}, callback);
         });
+    };
+    proto.update = function (parameters, values, callback) {
+        this.rawUpdate(parameters, {$set: values}, callback);
     };
     return constructor;
 })();
