@@ -25,7 +25,7 @@ describe('Chatrooms', function() {
     });
     describe('#post(objects, callback)', function() {
         it('successfully creates new chatroom without users', function(done) {
-            Chatrooms.post([{name: 'Userless chat'}], function(err, result) {
+            Chatrooms.insert([{name: 'Userless chat'}], function(err, result) {
                 assert.equal(err, null);
                 assert.equal(result.result.n, 1);
                 done();
@@ -38,7 +38,7 @@ describe('Chatrooms', function() {
                 done();
             };
             onUsersPost = function (users) {
-                Chatrooms.post([{name: 'Real chat', users: users}], onChatroomPost);
+                Chatrooms.insert([{name: 'Real chat', users: users}], onChatroomPost);
             };
             newUsers = [
                 {name: faker.name.findName(), createdOn: Date.now(),
@@ -46,7 +46,7 @@ describe('Chatrooms', function() {
                 {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()},
             ];
-            Users.post(newUsers, function (err, result) {
+            Users.insert(newUsers, function (err, result) {
                 assert.equal(err, null);
                 assert.equal(result.result.n, 2);
                 for (var user in result.ops) {
@@ -60,11 +60,11 @@ describe('Chatrooms', function() {
         it('successfully updates', function (done) {
             newUsers.push({name: faker.name.findName(), createdOn: Date.now(),
                            email: faker.internet.email(), address: faker.address.streetAddress()});
-            Users.post([newUsers[newUsers.length-1]], function (err, result) {
+            Users.insert([newUsers[newUsers.length-1]], function (err, result) {
                 assert.equal(err, null);
                 assert.equal(result.result.n, 1);
                 newUsers[newUsers.length-1]['_id'] = ObjectId(result.ops[0]['_id']);
-                Chatrooms.put({name: 'Real chat'}, {users: newUsers}, function (err, result) {
+                Chatrooms.update({name: 'Real chat'}, {users: newUsers}, function (err, result) {
                     assert.equal(err, null);
                     done();
                 });
@@ -77,12 +77,12 @@ describe('Chatrooms', function() {
                            email: faker.internet.email(), address: faker.address.streetAddress()});
             newUsers.push({name: faker.name.findName(), createdOn: Date.now(),
                            email: faker.internet.email(), address: faker.address.streetAddress()});
-            Users.post(newUsers.slice(newUsers.length-2), function (err, result) {
+            Users.insert(newUsers.slice(newUsers.length-2), function (err, result) {
                 assert.equal(err, null);
                 assert.equal(result.result.n, 2);
                 newUsers[newUsers.length-2]['_id'] = ObjectId(result.ops[0]['_id']);
                 newUsers[newUsers.length-1]['_id'] = ObjectId(result.ops[1]['_id']);
-                Chatrooms.get({name: 'Real chat'}, function (err, result) {
+                Chatrooms.find({name: 'Real chat'}, function (err, result) {
                     assert.equal(err, null);
                     Chatrooms.addUsers(result[0]['_id'], newUsers.slice(newUsers.length-2), function (err, res) {
                         assert.equal(err, null);
@@ -95,7 +95,7 @@ describe('Chatrooms', function() {
     });
     describe('#getUsers(id, callback', function() {
         it('gets proper list of users', function (done) {
-            Chatrooms.get({name: 'Real chat'}, function (err, result) {
+            Chatrooms.find({name: 'Real chat'}, function (err, result) {
                 assert.equal(err, null);
                 Chatrooms.getUsers(result[0]['_id'], function(err, users) {
                     assert.deepEqual(users.sort(), newUsers.sort());
@@ -106,17 +106,17 @@ describe('Chatrooms', function() {
     });
     describe('#delete(objects, callback)', function() {
         it('successfully deletes userless chatroom', function(done) {
-            Chatrooms.delete({name: 'Userless chat'}, function(err, result) {
+            Chatrooms.remove({name: 'Userless chat'}, function(err, result) {
                 assert.equal(err, null);
                 assert.equal(result.result.n, 1);
                 done();
             });
         });
         it('successfully deletes chatroom with users', function(done) {
-            Chatrooms.delete({name: 'Real chat'}, function(err, result) {
+            Chatrooms.remove({name: 'Real chat'}, function(err, result) {
                 assert.equal(err, null);
                 assert.equal(result.result.n, 1);
-                Users.delete({}, function(err, result) {
+                Users.remove({}, function(err, result) {
                     assert.equal(err, null);
                     assert.equal(result.result.n, 5);
                     done();

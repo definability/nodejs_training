@@ -23,13 +23,13 @@ describe('Users', function() {
     });
     describe('#post(objects, callback)', function() {
         beforeEach(function(done) {
-            users.delete({}, function(err, result) {
+            users.remove({}, function(err, result) {
                 assert.equal(err, null);
                 done();
             });
         });
         afterEach(function(done) {
-            users.delete({}, function(err, result) {
+            users.remove({}, function(err, result) {
                 assert.equal(err, null);
                 done();
             });
@@ -46,7 +46,7 @@ describe('Users', function() {
             };
             checkUser = function (user) {
                 var result = function (callback) {
-                    users.get(user, function(err, documents) {
+                    users.find(user, function(err, documents) {
                         assert.equal(err, null);
                         assert.equal(documents.length, 1);
                         callback();
@@ -62,7 +62,7 @@ describe('Users', function() {
                 {name: faker.name.findName(), createdOn: Date.now(),
                     email: faker.internet.email(), address: faker.address.streetAddress()}
             ];
-            users.post(newUsers, onPost);
+            users.insert(newUsers, onPost);
         });
     });
 });

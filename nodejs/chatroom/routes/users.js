@@ -16,7 +16,7 @@ var sendError = function (response, statusCode) {
 var Users = new UsersModel();
 
 router.get('/', function(request, response, next) {
-    Users.get({}, function (err, got) {
+    Users.find({}, function (err, got) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
@@ -45,7 +45,7 @@ router.post('/', function(request, response, next) {
         sendError(response, httpStatus.BAD_REQUEST);
         return;
     }
-    Users.post([request.body], function (err, result) {
+    Users.insert([request.body], function (err, result) {
         assert.equal(err, null);
         response.json({success: result.result.ok == 1, response: {users: result.ops}});
     });
@@ -56,7 +56,7 @@ router.delete('/', function(request, response, next) {
 });
 
 router.delete('/:id', function(request, response, next) {
-    Users.deleteById(request.params.id, function (err, deleted) {
+    Users.removeById(request.params.id, function (err, deleted) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);

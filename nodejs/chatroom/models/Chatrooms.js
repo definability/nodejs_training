@@ -31,7 +31,7 @@ Chatrooms = (function() {
                     return;
                 }
                 Array.prototype.push.apply(users, newUsers);
-                self.put({_id: id}, {users: users}, callback);
+                self.update({_id: id}, {users: users}, callback);
             });
         }
     });

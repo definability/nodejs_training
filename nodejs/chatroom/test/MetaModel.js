@@ -370,7 +370,7 @@ describe('MetaModel', function() {
                 assert.equal(results[0].first, 'new value');
                 done();
             };
-            Test.get({first: 'new value'}, onExecuted);
+            Test.find({first: 'new value'}, onExecuted);
         });
     });
     describe('#remove(parameters, callback)', function() {
@@ -403,7 +403,7 @@ describe('MetaModel', function() {
                 assert.equal(results.length, 0);
                 done();
             };
-            Test.get({}, onExecuted);
+            Test.find({}, onExecuted);
         });
     });
 });

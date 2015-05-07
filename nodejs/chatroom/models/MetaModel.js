@@ -35,7 +35,7 @@ var Model = (function() {
         }
     };
     var proto = constructor.prototype;
-    proto.get = function (parameters, callback) {
+    proto.find = function (parameters, callback) {
         if (parameters === undefined) {
             parameters = {};
         }
@@ -56,7 +56,7 @@ var Model = (function() {
             callback(e);
             return;
         }
-        this.get({_id: objectId}, callback);
+        this.find({_id: objectId}, callback);
     };
     proto.getObjectFields = function (object) {
         return _.pick(object, _.pluck(this.getSchema()['fields'], 'name'));
@@ -89,7 +89,7 @@ var Model = (function() {
         }
         return validationResults;
     };
-    proto.post = function (objects, callback) {
+    proto.insert = function (objects, callback) {
         if (callback === undefined) {
             callback(new Error('Callback field is mandatory'));
             return;
@@ -112,7 +112,7 @@ var Model = (function() {
             collection.insert(objects, callback);
         });
     };
-    proto.delete = function (parameters, callback) {
+    proto.remove = function (parameters, callback) {
         if (parameters === undefined) {
             parameters = {};
         }
@@ -124,7 +124,7 @@ var Model = (function() {
             collection.remove(parameters, callback);
         });
     };
-    proto.deleteById = function (id, callback) {
+    proto.removeById = function (id, callback) {
         var objectId;
         try {
             objectId = ObjectId(id);
@@ -132,9 +132,9 @@ var Model = (function() {
             callback(e);
             return;
         }
-        this.delete({_id: objectId}, callback);
+        this.remove({_id: objectId}, callback);
     };
-    proto.put = function (parameters, values, callback) {
+    proto.update = function (parameters, values, callback) {
         if (parameters === undefined) {
             parameters = {};
         }
@@ -146,10 +146,6 @@ var Model = (function() {
             collection.update(parameters, {$set: values}, {w: 1}, callback);
         });
     };
-    proto.find = proto.get;
-    proto.insert = proto.post;
-    proto.update = proto.put;
-    proto.remove = proto.delete;
     return constructor;
 })();
 
