@@ -4,12 +4,11 @@ var assert = require('assert'),
 
 var host = 'localhost',
     port = '3000',
-    path = '/users',
-    url = ['http://', host, ':', port, path].join('');
+    path = '/users';
 
 describe('HTTP server with Users', function() {
-    var currentUser;
-    var generateRequest = function (method, onEnd, pathAppendix) {
+    var currentUser,
+        generateRequest = function (method, onEnd, pathAppendix) {
         if (pathAppendix === undefined) {
             pathAppendix = '';
         }

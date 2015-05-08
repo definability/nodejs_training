@@ -15,9 +15,14 @@ Validator = (function() {
 })();
 
 defaultValidators = {
-    mandatory: new Validator (function(field) {
+    mandatory: new Validator(function(field) {
         return field !== undefined;
-    })
+    }),
+    arrayNotLessThan: function (count) {
+        return new Validator(function(field) {
+            return Array.isArray(field) && field.length >= count;
+        });
+    }
 };
 
 module.exports = {Validator: Validator, defaultValidators: defaultValidators};

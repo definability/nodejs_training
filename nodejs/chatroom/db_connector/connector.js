@@ -21,11 +21,14 @@ var getCollection = function (name) {
 var closeMongoDB = function (callback) {
     if (mongoDB === undefined) {
         callback(new Error('You have not connected to the database yet'));
+        return;
     }
     mongoDB.close(function (err, result) {
         if (err != null) {
             callback(err);
+            return;
         }
+        mongoDB = undefined;
         callback(null, result);
     });
 };
