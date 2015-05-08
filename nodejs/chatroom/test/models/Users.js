@@ -1,8 +1,8 @@
 var assert = require('assert'),
     _ = require('lodash'),
     async = require('async'),
-    Users = require('../models/Users.js'),
-    dbConnector = require('../db_connector/connector.js');
+    Users = require('../../models/Users.js'),
+    dbConnector = require('../../db_connector/connector.js');
     faker = require('faker');
 
 describe('Users', function() {

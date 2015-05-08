@@ -85,7 +85,7 @@ describe('HTTP server with Users', function() {
         });
     });
     describe('#DELETE', function() {
-        it('deletion of all users should not be success', function (done) {
+        it('deletion of all users should not be successful', function (done) {
             var request = generateRequest('DELETE', function (data) {
                 assert.equal(JSON.parse(data).success, false);
                 done();
@@ -117,6 +117,5 @@ describe('HTTP server with Users', function() {
             }, currentUser._id);
             request.end();
         });
-
     });
 });

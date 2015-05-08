@@ -1,6 +1,6 @@
 var assert = require('assert'),
-    Validator = require('../models/Validator.js').Validator,
-    defaultValidators = require('../models/Validator.js').defaultValidators;
+    Validator = require('../../models/Validator.js').Validator,
+    defaultValidators = require('../../models/Validator.js').defaultValidators;
 
 describe('Validator', function() {
     describe('#constructor(validate)', function() {
