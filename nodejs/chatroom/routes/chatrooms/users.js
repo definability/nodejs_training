@@ -6,8 +6,9 @@ var express = require('express'),
     httpStatus = require('http-status'),
     MongoClient = require('mongodb').MongoClient,
     ObjectId = require('mongodb').ObjectId,
-    Users = new require('../models/Users.js')(),
-    debug = require('debug')('Users');
+    Users = new require('../../models/Users.js')(),
+    Chatrooms = new require('../../models/Chatrooms.js')(),
+    debug = require('debug')('Chatrooms/Users');
 
 var sendError = function (response, statusCode) {
     response.status(statusCode).json({success: false, error: httpStatus[statusCode]});
@@ -27,22 +28,17 @@ router.param('user_id', function (request, response, next, user_id) {
 });
 
 router.get('/', function(request, response, next) {
-    Users.find({}, function (err, got) {
+    if (request.chatrooms.length == 0) {
+        sendError(response, httpStatus.NOT_FOUND);
+    }
+    Chatrooms.getUsers(request.chatrooms[0]._id, function (err, users) {
         if (err != null) {
-            console.error(err);
+            console.log(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
             return;
         }
-        response.json({success: true, response: got});
+        response.json({success: true, response: request.chatrooms[0].users});
     });
-});
-
-router.get('/:user_id', function(request, response, next) {
-    if (request.users.length == 0) {
-        sendError(response, httpStatus.NOT_FOUND);
-        return;
-    }
-    response.json({success: true, response: request.users});
 });
 
 router.post('/', function(request, response, next) {
@@ -50,29 +46,16 @@ router.post('/', function(request, response, next) {
         sendError(response, httpStatus.BAD_REQUEST);
         return;
     }
-    Users.insert([request.body], function (err, result) {
-        assert.equal(err, null);
-        response.json({success: result.result.ok == 1, response: {users: result.ops}});
+    Chatrooms.addUsers(request.chatrooms[0]._id, request.body, function (err, result) {
+        response.json({success: result.result.ok == 1, response: {n: result.result.n}});
     });
 });
 
-router.delete('/', function(request, response, next) {
-    sendError(response, httpStatus.BAD_REQUEST);
-});
-
-// TODO: change parameter name for not calling `parameter' method?
 router.delete('/:user_id', function(request, response, next) {
-    Users.removeById(request.params.user_id, function (err, deleted) {
-        if (err != null) {
-            console.error(err);
-            sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
-            return;
-        } else if (deleted.length == 0) {
-            sendError(response, httpStatus.NOT_FOUND);
-            return;
-        }
-        response.json({success: deleted.result.ok == 1, response: {count: deleted.result.n}});
+    Chatrooms.removeUsers(request.chatrooms[0]._id, [{_id: request.params.user_id}], function (err, result) {
+        response.json({success: result.result.ok == 1, response: {count: result.result.n}});
     });
 });
+
 
 module.exports = router;

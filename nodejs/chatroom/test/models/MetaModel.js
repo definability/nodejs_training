@@ -73,6 +73,59 @@ describe('MetaModel', function() {
                 assert.strictEqual(test1, test2);
             });
         });
+        describe('#generateRandomModels(n)', function() {
+            var schema;
+            before(function() {
+                schema = {
+                    name: 'test',
+                    fields: []
+                };
+                idField = {name: '_id', validators: []};
+            });
+            it('should raise error if was not overriden', function() {
+                var TestModel = new MetaModel(schema);
+                var testInstance = new TestModel();
+                assert.throws(testInstance.generateRandomModel);
+            });
+            it('should be called properly if overriden', function (done) {
+                var TestModel = new MetaModel(schema, {
+                    generateRandomModel: function() {
+                        done();
+                    }
+                });
+                var testInstance = new TestModel();
+                assert.doesNotThrow(testInstance.generateRandomModel);
+            });
+            it('should work when overriden', function() {
+                var TestModel = new MetaModel(schema, {
+                    generateRandomModel: function() {
+                        return null;
+                    }
+                });
+                var testInstance = new TestModel();
+                assert.equal(testInstance.generateRandomModel(), null);
+            });
+        });
+        describe('#generateRandomModels(n)', function() {
+            var schema;
+            before(function() {
+                schema = {
+                    name: 'test',
+                    fields: []
+                };
+                idField = {name: '_id', validators: []};
+            });
+            it('should raise error if method generateRandomModel was not overriden', function() {
+                var TestModel = new MetaModel(schema);
+                var testInstance = new TestModel();
+                assert.throws(testInstance.generateRandomModels);
+            });
+            it('should generate array with one item if method generateRandomModel was specified', function() {
+                var TestModel = new MetaModel(schema);
+                var testInstance = new TestModel();
+                assert.throws(testInstance.generateRandomModels);
+            });
+        });
         describe('#getSchema()', function() {
             before(function() {
             });

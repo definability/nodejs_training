@@ -139,6 +139,19 @@ var Model = (function() {
     proto.update = function (parameters, values, callback) {
         this.rawUpdate(parameters, {$set: values}, callback);
     };
+    proto.generateRandomModel = function() {
+        throw new Error('This method is abstract and should be overriden if you want to use it');
+    };
+    proto.generateRandomModels = function (n) {
+        if (n === undefined) {
+            n = 1;
+        }
+        var result = [];
+        for (var i=0; i<n; i++) {
+            result.push(this.generateRandomModel());
+        }
+        return result;
+    };
     return constructor;
 })();
 

@@ -1,36 +1,38 @@
 var assert = require('assert'),
     http = require('http'),
-    faker = require('faker');
+    //faker = require('faker');
+    Users = new require('../../models/Users.js')();
 
 var host = 'localhost',
     port = '3000',
     path = '/users';
 
 describe('HTTP server with Users', function() {
-    var currentUser,
+    var currentUser, generateRequest;
+    before(function() {
         generateRequest = function (method, onEnd, pathAppendix) {
-        if (pathAppendix === undefined) {
-            pathAppendix = '';
-        }
-        var options = {
-            host: host,
-            port: port,
-            path: [path, pathAppendix].join('/'),
-            method: method
+            if (pathAppendix === undefined) {
+                pathAppendix = '';
+            }
+            var options = {
+                host: host,
+                port: port,
+                path: [path, pathAppendix].join('/'),
+                method: method
+            };
+            var request = http.request(options, function (res) {
+                var chunks = [];
+                res.on('data', function (chunk) {
+                    chunks.push(chunk);
+                });
+                res.on('end', function() {
+                    onEnd(chunks.join(''));
+                });
+            });
+            request.setHeader('Content-Type', 'application/json');
+            return request;
         };
-        var request = http.request(options, function (res) {
-            var chunks = [];
-
-            res.on('data', function (chunk) {
-                chunks.push(chunk);
-            });
-            res.on('end', function() {
-                onEnd(chunks.join(''));
-            });
-        });
-        request.setHeader('Content-Type', 'application/json');
-        return request;
-    };
+    });
     describe('#POST', function() {
         it('should post blank user with error', function (done) {
             var request = generateRequest('POST', function (data) {
@@ -40,12 +42,7 @@ describe('HTTP server with Users', function() {
             request.end();
         });
         it('should post user correctly', function (done) {
-            currentUser = {
-                name: faker.name.findName(),
-                createdOn: Date.now(),
-                email: faker.internet.email(),
-                address: faker.address.streetAddress()
-            };
+            currentUser = Users.generateRandomModel();
             var request = generateRequest('POST', function (data) {
                 dataJSON = JSON.parse(data);
                 assert.equal(dataJSON.success, true);
