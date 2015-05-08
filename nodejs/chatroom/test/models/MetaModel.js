@@ -1,11 +1,11 @@
 var assert = require('assert'),
-    MetaModel = require('../models/MetaModel.js'),
+    MetaModel = require('../../models/MetaModel.js'),
     ObjectId = require('mongodb').ObjectId,
-    Validator = require('../models/Validator.js').Validator,
-    defaultValidators = require('../models/Validator.js').defaultValidators,
+    Validator = require('../../models/Validator.js').Validator,
+    defaultValidators = require('../../models/Validator.js').defaultValidators,
     _ = require('lodash'),
     async = require('async'),
-    dbConnector = require('../db_connector/connector.js');
+    dbConnector = require('../../db_connector/connector.js');
 
 describe('MetaModel', function() {
     before(function (done) {

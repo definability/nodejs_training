@@ -1,9 +1,9 @@
 var assert = require('assert'),
     _ = require('lodash'),
-    UsersModel = require('../models/Users.js'),
-    ChatroomsModel = require('../models/Chatrooms.js'),
+    UsersModel = require('../../models/Users.js'),
+    ChatroomsModel = require('../../models/Chatrooms.js'),
     ObjectId = require('mongodb').ObjectId,
-    dbConnector = require('../db_connector/connector.js');
+    dbConnector = require('../../db_connector/connector.js');
     faker = require('faker');
 
 
