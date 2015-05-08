@@ -1,63 +1,44 @@
 var assert = require('assert'),
     _ = require('lodash'),
-    UsersModel = require('../../models/Users.js'),
-    ChatroomsModel = require('../../models/Chatrooms.js'),
+    async = require('async'),
     ObjectId = require('mongodb').ObjectId,
+    Users = new require('../../models/Users.js')(),
+    Chatrooms = new require('../../models/Chatrooms.js')(),
     dbConnector = require('../../db_connector/connector.js');
-    faker = require('faker');
 
 
 describe('Chatrooms', function() {
-    var Users, Chatrooms, users, chatroom, getNewUser;
+    var users, chatroom;
     before(function (done) {
-        Users = new UsersModel();
-        Chatrooms = new ChatroomsModel();
-        getNewUsers = function(n) {
-            if (n !== undefined) {
-                var result = [];
-                for (var i=0; i<n; i++) {
-                    result.push(getNewUsers());
-                }
-                return result;
-            }
-            return {name: faker.name.findName(), createdOn: Date.now(), email: faker.internet.email(),
-                    address: faker.address.streetAddress()};
+        var onUsersCreated, createUsers, onChatroomCreated, createChatroom, onConnect, lastCallback;
+        onUsersCreated = function (result, callback) {
+            assert.equal(result.ops.length, users.length);
+            users = result.ops;
+            callback();
         };
-        var onUsersCreated = function (callback) {
-            return function (err, result) {
-                assert.equal(err, null);
-                assert.equal(result.ops.length, users.length);
-                users = result.ops;
-                callback();
-            };
+        createUsers = function (callback) {
+            users = Users.generateRandomModels(3);
+            Users.insert(users, callback);
         };
-        var createUsers = function (callback) {
-            return function () {
-                users = getNewUsers(3);
-                Users.insert(users, callback);
-            };
+        onChatroomCreated = function (result, callback) {
+            assert.equal(result.ops.length, 1);
+            chatroom = result.ops[0];
+            callback();
         };
-        var onChatroomCreated = function (callback) {
-            return function (err, result) {
-                assert.equal(err, null);
-                assert.equal(result.ops.length, 1);
-                chatroom = result.ops[0];
-                callback();
-            };
-        };
-        var createChatroom = function (callback) {
-            return function () {
+        createChatroom = function (callback) {
                 chatroom = {name: 'Real chat', users: users};
                 Chatrooms.insert([chatroom], callback);
-            };
         };
-        var onConnect = function (callback) {
-            return function (err, db) {
-                assert.equal(err, null);
-                callback();
-            }
+        onConnect = function (db, callback) {
+            callback();
         };
-        _.flowRight(dbConnector.connect, onConnect, createUsers, onUsersCreated, createChatroom, onChatroomCreated)(done);
+        lastCallback = function (err) {
+            assert.equal(err, null);
+            done();
+        };
+        async.waterfall([dbConnector.connect, onConnect, createUsers, onUsersCreated,
+                         createChatroom, onChatroomCreated], lastCallback);
+
     });
     after(function (done) {
         dbConnector.close(function (err, db) {
@@ -121,7 +102,7 @@ describe('Chatrooms', function() {
                 };
             };
             insertUser = function (callback) {
-                    var newUser = getNewUsers(); 
+                    var newUser = Users.generateRandomModel(); 
                     users.push(newUser);
                     Users.insert([newUser], callback);
             };

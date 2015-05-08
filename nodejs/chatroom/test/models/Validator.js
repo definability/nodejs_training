@@ -38,7 +38,6 @@ describe('Validator', function() {
         });
     });
 });
-
 describe('defaultValidators', function() {
     describe('#mandatory', function() {
         it('exists', function() {

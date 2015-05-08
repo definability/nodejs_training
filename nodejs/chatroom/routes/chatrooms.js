@@ -6,28 +6,26 @@ var express = require('express'),
     httpStatus = require('http-status'),
     MongoClient = require('mongodb').MongoClient,
     ObjectId = require('mongodb').ObjectId,
-    Users = new require('../models/Users.js')(),
+    Chatrooms = new require('../models/Chatrooms.js')(),
     debug = require('debug')('Users');
 
 var sendError = function (response, statusCode) {
     response.status(statusCode).json({success: false, error: httpStatus[statusCode]});
 };
 
-router.param('user_id', function (request, response, next, user_id) {
-    request.users = [];
-    Users.findById(user_id, function (err, got) {
+router.param('chatroom_id', function (request, response, next, chatroom_id) {
+    Chatrooms.findById(chatroom_id, function (err, got) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
-            //request.error = httpStatus.INTERNAL_SERVER_ERROR;
         }
-        request.users = got;
+        request.chatrooms = got;
         return next();
     });
 });
 
 router.get('/', function(request, response, next) {
-    Users.find({}, function (err, got) {
+    Chatrooms.find({}, function (err, got) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
@@ -37,22 +35,24 @@ router.get('/', function(request, response, next) {
     });
 });
 
-router.get('/:user_id', function(request, response, next) {
-    if (request.users.length == 0) {
+router.get('/:chatroom_id', function(request, response, next) {
+    if (request.chatrooms.length == 0) {
         sendError(response, httpStatus.NOT_FOUND);
         return;
     }
-    response.json({success: true, response: request.users});
+    response.json({success: true, response: request.chatrooms});
 });
+
+router.use('/:chatroom_id/users', require('./chatrooms/users.js'));
 
 router.post('/', function(request, response, next) {
     if (Object.keys(request.body).length == 0) {
         sendError(response, httpStatus.BAD_REQUEST);
         return;
     }
-    Users.insert([request.body], function (err, result) {
+    Chatrooms.insert([request.body], function (err, result) {
         assert.equal(err, null);
-        response.json({success: result.result.ok == 1, response: {users: result.ops}});
+        response.json({success: result.result.ok == 1, response: {chatrooms: result.ops}});
     });
 });
 
@@ -60,9 +60,8 @@ router.delete('/', function(request, response, next) {
     sendError(response, httpStatus.BAD_REQUEST);
 });
 
-// TODO: change parameter name for not calling `parameter' method?
-router.delete('/:user_id', function(request, response, next) {
-    Users.removeById(request.params.user_id, function (err, deleted) {
+router.delete('/:id', function(request, response, next) {
+    Chatrooms.removeById(request.params.id, function (err, deleted) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
