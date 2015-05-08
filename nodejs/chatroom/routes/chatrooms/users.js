@@ -20,7 +20,6 @@ router.param('user_id', function (request, response, next, user_id) {
         if (err != null) {
             console.error(err);
             sendError(response, httpStatus.INTERNAL_SERVER_ERROR);
-            //request.error = httpStatus.INTERNAL_SERVER_ERROR;
         }
         request.users = got;
         return next();

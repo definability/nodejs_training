@@ -1,6 +1,5 @@
 var assert = require('assert'),
     http = require('http'),
-    //faker = require('faker');
     Users = new require('../../models/Users.js')();
 
 var host = 'localhost',

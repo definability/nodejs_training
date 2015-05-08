@@ -64,7 +64,6 @@ describe('HTTP server with Chatrooms', function() {
                 dataJSON = JSON.parse(data);
                 assert.equal(dataJSON.success, true);
                 assert.equal(dataJSON.response.chatrooms.length, 1);
-                //currentChatroom._id = dataJSON.response.chatrooms[0]._id;
                 currentChatroom = dataJSON.response.chatrooms[0];
                 assert.deepEqual(dataJSON.response.chatrooms[0], currentChatroom);
                 done();
