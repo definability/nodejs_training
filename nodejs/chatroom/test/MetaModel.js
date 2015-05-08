@@ -4,6 +4,7 @@ var assert = require('assert'),
     Validator = require('../models/Validator.js').Validator,
     defaultValidators = require('../models/Validator.js').defaultValidators,
     _ = require('lodash'),
+    async = require('async'),
     dbConnector = require('../db_connector/connector.js');
 
 describe('MetaModel', function() {
@@ -307,36 +308,28 @@ describe('MetaModel', function() {
                 Test.find(onExecuted);
             });
             it('finds all entries if no search parameters were set', function (done) {
-                var onInserted, onFound, onRemoved, command, entryId;
-                onRemoved = function (callback) {
-                    return function (err, result) {
-                        assert.equal(err, null);
-                        assert.equal(result.result.ok, 1);
-                        assert.equal(result.result.n, 1);
-                        callback();
-                    };
+                var onInserted, onFound, onRemoved, command, testDocumentId;
+                onRemoved = function (result, callback) {
+                    assert.equal(result.result.ok, 1);
+                    assert.equal(result.result.n, 1);
+                    callback();
                 };
-                onFound = function (callback) {
-                    return function (err, result) {
-                        assert.equal(result.length, 1);
-                        assert.equal(ObjectId(result[0]['_id']).equals(entryId), true);
-                        Test.removeById(entryId, callback);
-                    };
+                onFound = function (result, callback) {
+                    assert.equal(ObjectId(result[0]['_id']).equals(testDocumentId), true);
+                    Test.removeById(testDocumentId, callback);
                 };
-                onInserted = function (callback) {
-                    return function (err, result) {
-                        assert.equal(err, null);
-                        entryId = result.ops[0]['_id'];
-                        Test.find(callback);
-                    };
+                onInserted = function (result, callback) {
+                    testDocumentId = result.ops[0]['_id'];
+                    Test.find(callback);
                 };
-                command = function (callback) {
-                    return function (err, collection) {
-                        assert.equal(err, null);
-                        collection.insert([{key: 'value'}], callback);
-                    };
+                command = function (collection, callback) {
+                    collection.insert([{key: 'value'}], callback);
                 };
-                _.flowRight(Test.rawCommand, command, onInserted, onFound, onRemoved)(done);
+                lastCallback = function (err) {
+                    assert.equal(err, null);
+                    done();
+                };
+                async.waterfall([Test.rawCommand, command, onInserted, onFound, onRemoved], lastCallback);
             });
         });
         describe('#findById(id, callback)', function() {
@@ -352,37 +345,29 @@ describe('MetaModel', function() {
                 assert.throws(Test.findById('invalid id', onExecuted));
             });
             it('finds entry by id', function (done) {
-                var onInserted, onFound, onRemoved, command, entryId;
-                onRemoved = function (callback) {
-                    return function (err, result) {
-                        assert.equal(err, null);
-                        assert.equal(result.result.ok, 1);
-                        assert.equal(result.result.n, 1);
-                        callback();
-                    };
+                var onInserted, onFound, onRemoved, command, testDocumentId, lastCallback;
+                onRemoved = function (result, callback) {
+                    assert.equal(result.result.ok, 1);
+                    assert.equal(result.result.n, 1);
+                    callback();
                 };
-                onFound = function (callback) {
-                    return function (err, result) {
-                        assert.equal(err, null);
-                        assert.equal(result.length, 1);
-                        assert.equal(ObjectId(result[0]['_id']).equals(entryId), true);
-                        Test.removeById(entryId, callback);
-                    };
+                onFound = function (result, callback) {
+                    assert.equal(result.length, 1);
+                    assert.equal(ObjectId(result[0]['_id']).equals(testDocumentId), true);
+                    Test.removeById(testDocumentId, callback);
                 };
-                onInserted = function (callback) {
-                    return function (err, result) {
-                        assert.equal(err, null);
-                        entryId = result.ops[0]['_id'];
-                        Test.findById(entryId, callback);
-                    };
+                onInserted = function (result, callback) {
+                    testDocumentId = result.ops[0]['_id'];
+                    Test.findById(testDocumentId, callback);
                 };
-                command = function (callback) {
-                    return function (err, collection) {
-                        assert.equal(err, null);
-                        collection.insert([{key: 'value'}], callback);
-                    };
+                command = function (collection, callback) {
+                    collection.insert([{key: 'value'}], callback);
                 };
-                _.flowRight(Test.rawCommand, command, onInserted, onFound, onRemoved)(done);
+                lastCallback = function (err) {
+                    assert.equal(err, null);
+                    done();
+                };
+                async.waterfall([Test.rawCommand, command, onInserted, onFound, onRemoved], lastCallback);
             });
         });
         describe('#insert(parameters, callback)', function() {
